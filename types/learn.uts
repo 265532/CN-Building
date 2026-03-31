@@ -1,0 +1,12 @@
+export type LearnPath = {
+  id: string
+  title: string
+  desc: string
+  url: string
+}
+
+export type LearnData = {
+  headerTitle: string
+  headerSubtitle: string
+  paths: LearnPath[]
+}

@@ -1,0 +1,147 @@
+<template>
+  <view class="camera-page">
+    <camera class="camera-view" device-position="back" flash="off" @error="handleError"></camera>
+    
+    <view class="bottom-panel">
+      <view class="controls">
+        <view class="icon-btn" @click="chooseAlbum">
+          <text class="btn-text">相册</text>
+        </view>
+        
+        <view class="capture-btn" @click="takePhoto">
+          <view class="capture-inner"></view>
+        </view>
+        
+        <view class="icon-btn placeholder"></view>
+      </view>
+      
+      <view class="photo-preview-area" v-if="photos.length > 0">
+        <text class="section-title">我的照片 (点击可上传识别)</text>
+        <scroll-view class="photo-list" scroll-x="true">
+          <view class="photo-list-inner">
+            <image 
+              class="photo-item" 
+              v-for="(photo, index) in photos" 
+              :key="index" 
+              :src="photo" 
+              mode="aspectFill"
+              @click="uploadPhoto(photo)"
+            ></image>
+          </view>
+        </scroll-view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script setup lang="uts">
+import { ref } from 'vue'
+
+const photos = ref<string[]>([])
+
+const handleError = () => {
+  uni.showToast({ title: '相机调用失败，请检查权限', icon: 'none' })
+}
+
+const takePhoto = () => {
+  const ctx = uni.createCameraContext()
+  ctx.takePhoto({
+    quality: 'high',
+    success: (res) => {
+      photos.value.unshift(res.tempImagePath)
+    },
+    fail: () => {
+      uni.showToast({ title: '拍照失败', icon: 'none' })
+    }
+  })
+}
+
+const chooseAlbum = () => {
+  uni.chooseImage({
+    count: 1,
+    sourceType: ['album'],
+    success: (res) => {
+      if (res.tempFilePaths && res.tempFilePaths.length > 0) {
+        photos.value.unshift(res.tempFilePaths[0] as string)
+      }
+    }
+  })
+}
+
+const uploadPhoto = (photoPath: string) => {
+  uni.$emit('onAiPhotoSelected', photoPath)
+  uni.navigateBack()
+}
+</script>
+
+<style>
+.camera-page {
+  flex: 1;
+  flex-direction: column;
+  background-color: #000000;
+}
+.camera-view {
+  flex: 2;
+  width: 100%;
+}
+.bottom-panel {
+  flex: 1;
+  background-color: #1A1A1A;
+  padding: 24px 16px;
+  flex-direction: column;
+}
+.controls {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.icon-btn {
+  width: 60px;
+  align-items: center;
+  justify-content: center;
+}
+.btn-text {
+  color: #FFFFFF;
+  font-size: 16px;
+}
+.placeholder {
+  width: 60px;
+}
+.capture-btn {
+  width: 72px;
+  height: 72px;
+  border-radius: 36px;
+  background-color: rgba(255, 255, 255, 0.3);
+  justify-content: center;
+  align-items: center;
+}
+.capture-inner {
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  background-color: #FFFFFF;
+}
+.photo-preview-area {
+  flex: 1;
+  flex-direction: column;
+}
+.section-title {
+  color: #9E9E9E;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+.photo-list {
+  height: 80px;
+}
+.photo-list-inner {
+  flex-direction: row;
+  height: 80px;
+}
+.photo-item {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  margin-right: 12px;
+}
+</style>

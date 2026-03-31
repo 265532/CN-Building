@@ -1,0 +1,49 @@
+<template>
+  <view class="container">
+    <view class="graph-area">
+      <text class="graph-text">[ECharts 关系图 / G6 渲染区]</text>
+    </view>
+    <view class="info-panel">
+      <view class="drag-bar"></view>
+      <text class="info-title">节点：{{ nodeData.title }}</text>
+      <text class="info-desc">{{ nodeData.content }}</text>
+    </view>
+  </view>
+</template>
+
+<script setup lang="uts">
+import { ref, onMounted } from 'vue'
+import { onLoad } from '@dcloudio/uni-app'
+import { fetchKnowledgeNode } from '../../services/knowledge.uts'
+import type { KnowledgeNode } from '../../types/knowledge.uts'
+
+const nodeId = ref<string>('k1')
+const nodeData = ref<KnowledgeNode>({
+  id: '',
+  title: '',
+  content: '',
+  type: '',
+  relatedNodes: []
+} as KnowledgeNode)
+
+onLoad((options: UTSJSONObject) => {
+  const typeOpt = options['type'] as string | null
+  if (typeOpt != null) {
+    nodeId.value = typeOpt
+  }
+})
+
+onMounted(async () => {
+  nodeData.value = await fetchKnowledgeNode(nodeId.value)
+})
+</script>
+
+<style>
+.container { flex: 1; background-color: #F8F5F0; display: flex; flex-direction: column; }
+.graph-area { flex: 1; align-items: center; justify-content: center; background-color: rgba(158, 158, 158, 0.05); }
+.graph-text { color: #9E9E9E; font-size: 14px; }
+.info-panel { background-color: #FFFFFF; padding: 24px; border-top-left-radius: 16px; border-top-right-radius: 16px; box-shadow: 0 -4px 6px rgba(0,0,0,0.05); }
+.drag-bar { width: 48px; height: 4px; background-color: #E0E0E0; border-radius: 2px; align-self: center; margin-bottom: 16px; }
+.info-title { font-size: 18px; font-weight: bold; color: #3D3D3D; margin-bottom: 12px; }
+.info-desc { font-size: 14px; color: #9E9E9E; line-height: 1.5; }
+</style>

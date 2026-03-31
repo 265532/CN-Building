@@ -1,0 +1,158 @@
+<template>
+  <scroll-view class="container" scroll-y="true">
+    <!-- 未登录状态 -->
+    <view class="login-card" v-if="!userStore.isLoggedIn">
+      <view class="avatar-placeholder"></view>
+      <custom-button text="点击登录" type="primary" size="normal" @click="handleLogin" class="login-btn-custom"></custom-button>
+      <text class="login-tips">登录后体验完整学习功能</text>
+    </view>
+
+    <!-- 已登录状态 -->
+    <view class="user-card" v-else-if="userInfo.id">
+      <view class="avatar"></view>
+      <view class="user-info">
+        <text class="username">{{ userInfo.username }}</text>
+        <view class="tags">
+          <text class="level-tag">{{ userInfo.level }}</text>
+          <text class="day-tag">已连续学习 {{ userInfo.studyDays }} 天</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="section" v-if="userStore.isLoggedIn && userInfo.id">
+      <view class="section-header">
+        <text class="section-title">学习勋章</text>
+        <text class="view-all" @click="goTo('/pages/achievement/list')">查看全部 ></text>
+      </view>
+      <view class="medals-grid">
+        <view class="medal-item" v-for="medal in userInfo.medals" :key="medal.id">
+          <view :class="['medal-icon', 'medal-' + medal.type]"></view>
+          <text class="medal-name">{{ medal.name }}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="section" v-if="userStore.isLoggedIn && userInfo.id">
+      <text class="section-title" style="margin-bottom: 16px;">知识点掌握度</text>
+      <view class="radar-list">
+        <view class="radar-item" v-for="(item, index) in userInfo.knowledgeRadar" :key="index">
+          <text class="radar-label">{{ item.name }}</text>
+          <view class="radar-bar-bg">
+            <view class="radar-bar-fill" :style="{ width: item.value + '%' }"></view>
+          </view>
+          <text class="radar-value">{{ item.value }}%</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="section" v-if="userStore.isLoggedIn && userInfo.id">
+      <text class="section-title" style="margin-bottom: 16px;">学习时长统计</text>
+      <template v-if="userInfo.recentRecords && userInfo.recentRecords.length > 0">
+        <view class="record-item" v-for="record in userInfo.recentRecords" :key="record.id">
+          <view>
+            <text class="record-title">{{ record.title }}</text>
+            <text class="record-date">{{ record.date }}</text>
+          </view>
+          <text class="record-time">{{ record.duration }}</text>
+        </view>
+      </template>
+      <empty-state v-else text="暂无学习记录"></empty-state>
+    </view>
+    
+    <custom-button v-if="userStore.isLoggedIn" text="退出登录" type="outline" size="large" @click="handleLogout" class="logout-btn-custom"></custom-button>
+  </scroll-view>
+</template>
+
+<script setup lang="uts">
+import { ref, onMounted, watch } from 'vue'
+import { fetchUserInfo, performLogin } from '../../services/user.uts'
+import type { UserInfo } from '../../types/user.uts'
+import { userStore, logout } from '../../store/user.uts'
+import CustomButton from '../../components/CustomButton/CustomButton.uvue'
+import EmptyState from '../../components/EmptyState/EmptyState.uvue'
+
+const userInfo = ref<UserInfo>({
+  id: '',
+  username: '',
+  level: '',
+  studyDays: 0,
+  medals: [],
+  recentRecords: [],
+  knowledgeRadar: []
+} as UserInfo)
+
+const loadUserInfo = async () => {
+  if (userStore.isLoggedIn) {
+    userInfo.value = await fetchUserInfo()
+  }
+}
+
+onMounted(() => {
+  loadUserInfo()
+})
+
+watch(() => userStore.isLoggedIn, (newVal) => {
+  if (newVal) {
+    loadUserInfo()
+  } else {
+    // 清空数据
+    userInfo.value.id = ''
+  }
+})
+
+const handleLogin = () => {
+  uni.navigateTo({ url: '/pages/auth/login' })
+}
+
+const handleLogout = () => {
+  logout()
+}
+
+const goTo = (url: string) => { 
+  uni.navigateTo({ url }) 
+}
+</script>
+
+<style>
+.container { flex: 1; padding: 16px; background-color: #F8F5F0; }
+
+.login-card { background-color: #FFFFFF; padding: 32px 20px; border-radius: 8px; margin-bottom: 24px; align-items: center; border: 1px solid #E0E0E0; }
+.avatar-placeholder { width: 80px; height: 80px; border-radius: 40px; background-color: #E0E0E0; margin-bottom: 16px; }
+.login-btn-custom { margin-bottom: 12px; }
+.login-tips { font-size: 12px; color: #9E9E9E; }
+
+.user-card { flex-direction: row; background-color: #FFFFFF; padding: 20px; border-radius: 8px; margin-bottom: 24px; align-items: center; border: 1px solid #E0E0E0; }
+.avatar { width: 60px; height: 60px; border-radius: 30px; background-color: #9E9E9E; margin-right: 16px; }
+.user-info { flex: 1; }
+.username { font-size: 20px; font-weight: bold; color: #3D3D3D; margin-bottom: 8px; }
+.tags { flex-direction: row; align-items: center; }
+.level-tag { font-size: 12px; color: #7A5C48; background-color: rgba(122, 92, 72, 0.1); padding: 2px 6px; border-radius: 4px; margin-right: 8px; }
+.day-tag { font-size: 12px; color: #9E9E9E; }
+
+.section { background-color: #FFFFFF; padding: 16px; border-radius: 8px; border: 1px solid #E0E0E0; margin-bottom: 16px; }
+.section-header { flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.section-title { font-size: 16px; font-weight: bold; color: #3D3D3D; }
+.view-all { font-size: 12px; color: #9E9E9E; }
+
+.medals-grid { flex-direction: row; justify-content: space-around; }
+.medal-item { align-items: center; }
+.medal-icon { width: 48px; height: 48px; border-radius: 24px; margin-bottom: 8px; }
+.medal-bronze { background-color: #CD7F32; }
+.medal-silver { background-color: #C0C0C0; }
+.medal-gold { background-color: #FFD700; }
+.medal-name { font-size: 12px; color: #3D3D3D; }
+
+.radar-list { flex-direction: column; }
+.radar-item { flex-direction: row; align-items: center; margin-bottom: 12px; }
+.radar-label { width: 70px; font-size: 14px; color: #3D3D3D; }
+.radar-bar-bg { flex: 1; height: 8px; background-color: #F8F5F0; border-radius: 4px; margin: 0 12px; overflow: hidden; }
+.radar-bar-fill { height: 8px; background-color: #7A5C48; border-radius: 4px; }
+.radar-value { width: 40px; font-size: 12px; color: #9E9E9E; text-align: right; }
+
+.record-item { flex-direction: row; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #E0E0E0; }
+.record-title { font-size: 14px; color: #3D3D3D; margin-bottom: 4px; }
+.record-date { font-size: 12px; color: #9E9E9E; }
+.record-time { font-size: 14px; font-weight: bold; color: #7A5C48; }
+
+.logout-btn-custom { margin-top: 16px; margin-bottom: 32px; }
+</style>

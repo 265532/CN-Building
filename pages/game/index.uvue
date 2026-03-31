@@ -1,0 +1,118 @@
+<template>
+  <view class="container">
+    <view class="header">
+      <text class="title">游戏式沉浸学习</text>
+      <text class="subtitle">寓教于乐，在互动中感受古建魅力</text>
+    </view>
+
+    <scroll-view class="game-list" scroll-y="true">
+      <view class="game-card" v-for="game in games" :key="game.id" @click="enterGame(game.path)">
+        <view class="game-cover" :style="{ backgroundColor: game.color }">
+          <text class="game-cover-text">{{ game.name.substring(0, 2) }}</text>
+        </view>
+        <view class="game-content">
+          <view class="game-info">
+            <text class="game-name">{{ game.name }}</text>
+            <text class="game-desc">{{ game.desc }}</text>
+          </view>
+          <view class="play-btn">
+            <text class="play-text">进入</text>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</template>
+
+<script setup lang="uts">
+const games = [
+  { id: 'g1', name: '斗拱拼图', path: '/pages/game/puzzle', desc: '将散落的木构件拼装成完整的斗拱，学习榫卯原理。', color: '#E8A38C' },
+  { id: 'g2', name: '瓦当消消乐', path: '/pages/game/match3', desc: '匹配相同的瓦当纹样，了解不同朝代的图腾文化。', color: '#8CB8A3' },
+  { id: 'g3', name: '古建扫雷', path: '/pages/game/minesweeper', desc: '在地图中避开毁坏的遗址，找出保存完好的古建筑。', color: '#A399C8' }
+]
+
+const enterGame = (path: string) => {
+  if (path) {
+    uni.navigateTo({ url: path })
+  } else {
+    uni.showToast({ title: `模块开发中...`, icon: 'none' })
+  }
+}
+</script>
+
+<style>
+.container {
+  flex: 1;
+  background-color: #F8F5F0;
+  padding: 16px;
+}
+.header {
+  margin-bottom: 24px;
+}
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #3D3D3D;
+  margin-bottom: 8px;
+}
+.subtitle {
+  font-size: 14px;
+  color: #7A5C48;
+}
+.game-list {
+  flex: 1;
+  flex-direction: column;
+}
+.game-card {
+  flex-direction: column;
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  overflow: hidden;
+  border: 1px solid #E0E0E0;
+}
+.game-cover {
+  height: 120px;
+  align-items: center;
+  justify-content: center;
+}
+.game-cover-text {
+  font-size: 32px;
+  font-weight: bold;
+  color: #FFFFFF;
+  opacity: 0.8;
+}
+.game-content {
+  flex-direction: row;
+  padding: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+.game-info {
+  flex: 1;
+  flex-direction: column;
+  margin-right: 16px;
+}
+.game-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #3D3D3D;
+  margin-bottom: 6px;
+}
+.game-desc {
+  font-size: 13px;
+  color: #9E9E9E;
+  line-height: 1.5;
+}
+.play-btn {
+  background-color: #C44536;
+  padding: 8px 20px;
+  border-radius: 20px;
+}
+.play-text {
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: bold;
+}
+</style>

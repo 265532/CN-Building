@@ -1,0 +1,31 @@
+export type MapMarkerCallout = {
+  content: string
+  color?: string
+  fontSize?: number
+  borderRadius?: number
+  bgColor?: string
+  padding?: number
+  display?: string
+}
+
+export type MapMarker = {
+  id: number
+  latitude: number
+  longitude: number
+  title: string
+  iconPath: string
+  width: number
+  height: number
+  callout?: MapMarkerCallout
+  address?: string
+  imageUrl?: string
+  category?: string
+}
+
+export type Place = {
+  id: number
+  name: string
+  distance: string
+  address?: string
+  category?: string
+}

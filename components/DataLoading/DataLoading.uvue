@@ -1,0 +1,41 @@
+<template>
+  <view class="loading-container">
+    <view class="spinner"></view>
+    <text class="loading-text">{{ text }}</text>
+  </view>
+</template>
+
+<script setup lang="uts">
+defineProps({
+  text: {
+    type: String,
+    default: '加载中...'
+  }
+})
+</script>
+
+<style>
+.loading-container {
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+}
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #E0E0E0;
+  border-top-color: #C44536;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  /* 
+   * Note: uni-app x app 端暂不支持 CSS 动画 (animation),
+   * 这里主要做样式占位，App 端可使用原生 loading 或者 lottie。
+   * 小程序/H5 依然支持。
+   */
+}
+.loading-text {
+  font-size: 14px;
+  color: #9E9E9E;
+}
+</style>

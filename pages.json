@@ -1,0 +1,133 @@
+{
+	"pages": [{
+			"path": "pages/home/index",
+			"style": {
+				"navigationBarTitleText": "首页"
+			}
+		},
+		{
+			"path": "pages/learn/index",
+			"style": {
+				"navigationBarTitleText": "图谱"
+			}
+		},
+		{
+			"path": "pages/ai/index",
+			"style": {
+				"navigationBarTitleText": "AI导学"
+			}
+		},
+		{
+			"path": "pages/map/index",
+			"style": {
+				"navigationBarTitleText": "地图"
+			}
+		},
+		{
+			"path": "pages/profile/index",
+			"style": {
+				"navigationBarTitleText": "我的"
+			}
+		},
+		{
+			"path": "pages/topic/detail",
+			"style": {
+				"navigationBarTitleText": "专题详情"
+			}
+		},
+		{
+			"path": "pages/knowledge/detail",
+			"style": {
+				"navigationBarTitleText": "知识图谱详情"
+			}
+		},
+		{
+			"path": "pages/achievement/list",
+			"style": {
+				"navigationBarTitleText": "我的成就"
+			}
+		},
+		{
+			"path": "pages/auth/login",
+			"style": {
+				"navigationBarTitleText": "登录"
+			}
+		},
+		{
+			"path": "pages/auth/register",
+			"style": {
+				"navigationBarTitleText": "注册"
+			}
+		},
+		{
+			"path": "pages/game/index",
+			"style": {
+				"navigationBarTitleText": "沉浸学习"
+			}
+		},
+		{
+			"path": "pages/game/puzzle",
+			"style": {
+				"navigationBarTitleText": "斗拱拼图"
+			}
+		},
+		{
+			"path": "pages/game/match3",
+			"style": {
+				"navigationBarTitleText": "瓦当消消乐"
+			}
+		},
+		{
+			"path": "pages/game/minesweeper",
+			"style": {
+				"navigationBarTitleText": "古建扫雷"
+			}
+		},
+		{
+			"path": "pages/ai/camera",
+			"style": {
+				"navigationBarTitleText": "拍照识别",
+				"navigationBarBackgroundColor": "#000000",
+				"navigationBarTextStyle": "white"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "white",
+		"navigationBarBackgroundColor": "#7A5C48",
+		"backgroundColor": "#F8F5F0",
+		"animationType": "pop-in",
+		"animationDuration": 300
+	},
+	"tabBar": {
+		"color": "#9E9E9E",
+		"selectedColor": "#4A6B75",
+		"backgroundColor": "#F8F5F0",
+		"list": [{
+				"pagePath": "pages/home/index",
+				"text": "首页"
+			},
+			{
+				"pagePath": "pages/learn/index",
+				"text": "图谱"
+			},
+			{
+				"pagePath": "pages/ai/index",
+				"text": "AI导学"
+			},
+			{
+				"pagePath": "pages/map/index",
+				"text": "地图"
+			},
+			{
+				"pagePath": "pages/profile/index",
+				"text": "我的"
+			}
+		]
+	},
+	"permission": {
+		"scope.userLocation": {
+			"desc": "你的位置信息将用于小程序位置接口的效果展示" // 高速公路行驶持续后台定位
+		}
+	}
+}

@@ -1,0 +1,38 @@
+import type { Achievement } from '../types/achievement.uts'
+
+export function fetchAchievements(): Promise<Achievement[]> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([
+        {
+          id: 'a1',
+          title: '三宅同辉',
+          description: '完成民居三大单元学习',
+          icon: 'medal-bronze',
+          unlockedAt: '2023-10-01'
+        },
+        {
+          id: 'a2',
+          title: '九章规制',
+          description: '通关官府案例',
+          icon: 'medal-silver',
+          unlockedAt: '2023-10-05'
+        },
+        {
+          id: 'a3',
+          title: '紫宸经纬',
+          description: '掌握皇宫核心工艺',
+          icon: 'medal-gold',
+          unlockedAt: '2023-10-10'
+        },
+        {
+          id: 'a4',
+          title: '飞虹贯宇',
+          description: '理解桥梁结构原理',
+          icon: 'medal-diamond',
+          unlockedAt: null
+        }
+      ] as Achievement[])
+    }, 500)
+  })
+}

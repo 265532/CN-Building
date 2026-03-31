@@ -1,0 +1,277 @@
+<template>
+  <view class="container">
+    <view class="header">
+      <text class="title">斗拱拼图</text>
+      <text class="subtitle">将下方散落的构件拖拽至上方虚线框内</text>
+    </view>
+
+    <!-- 目标区域（斗拱拼装区） -->
+    <view class="target-area">
+      <view 
+        v-for="(slot, index) in slots" 
+        :key="slot.id" 
+        class="slot"
+        :class="{ 'slot-filled': slot.filled }"
+        :style="{ top: slot.y + 'px', left: slot.x + 'px', width: slot.width + 'px', height: slot.height + 'px' }"
+      >
+        <text class="slot-text" v-if="!slot.filled">{{ slot.name }}</text>
+        <view class="filled-piece" v-if="slot.filled" :style="{ backgroundColor: slot.color }"></view>
+      </view>
+    </view>
+
+    <!-- 待拼装构件区 -->
+    <view class="pieces-area">
+      <view 
+        v-for="(piece, index) in pieces" 
+        :key="piece.id"
+        class="piece"
+        :class="{ 'dragging': draggingId === piece.id }"
+        :style="{ 
+          backgroundColor: piece.color,
+          transform: `translate(${piece.x}px, ${piece.y}px)`,
+          width: piece.width + 'px',
+          height: piece.height + 'px',
+          zIndex: draggingId === piece.id ? 100 : 1
+        }"
+        @touchstart="onTouchStart($event, piece)"
+        @touchmove="onTouchMove($event, piece)"
+        @touchend="onTouchEnd($event, piece)"
+      >
+        <text class="piece-text">{{ piece.name }}</text>
+      </view>
+    </view>
+
+    <!-- 成功提示 -->
+    <view class="success-mask" v-if="isSuccess">
+      <view class="success-box">
+        <text class="success-title">拼装成功！</text>
+        <text class="success-desc">斗拱是中国建筑特有的一种结构。在立柱和横梁交接处，从柱顶上加的一层层探出成弓形的承重结构叫拱，拱与拱之间垫的方形木块叫斗，合称斗拱。</text>
+        <view class="success-btn" @click="resetGame">
+          <text class="success-btn-text">再玩一次</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script setup lang="uts">
+import { ref, computed } from 'vue'
+import { audioUtil } from '@/utils/audio.uts'
+
+type Slot = {
+  id: string
+  name: string
+  x: number
+  y: number
+  width: number
+  height: number
+  filled: boolean
+  color: string
+}
+
+type Piece = {
+  id: string
+  name: string
+  width: number
+  height: number
+  color: string
+  startX: number
+  startY: number
+  x: number
+  y: number
+  targetId: string
+  isPlaced: boolean
+}
+
+// 目标槽位
+const slots = ref<Slot[]>([
+  { id: 's1', name: '栌斗', x: 120, y: 150, width: 80, height: 40, filled: false, color: '#C44536' },
+  { id: 's2', name: '华拱', x: 100, y: 110, width: 120, height: 40, filled: false, color: '#E8A38C' },
+  { id: 's3', name: '交互斗', x: 140, y: 70, width: 40, height: 40, filled: false, color: '#8CB8A3' }
+])
+
+// 可拖拽的构件
+const initialPieces: Piece[] = [
+  { id: 'p1', name: '栌斗', width: 80, height: 40, color: '#C44536', startX: 20, startY: 20, x: 20, y: 20, targetId: 's1', isPlaced: false },
+  { id: 'p2', name: '华拱', width: 120, height: 40, color: '#E8A38C', startX: 120, startY: 20, x: 120, y: 20, targetId: 's2', isPlaced: false },
+  { id: 'p3', name: '交互斗', width: 40, height: 40, color: '#8CB8A3', startX: 260, startY: 20, x: 260, y: 20, targetId: 's3', isPlaced: false }
+]
+
+const pieces = ref<Piece[]>(JSON.parse(JSON.stringify(initialPieces)))
+
+const draggingId = ref<string>('')
+let startTouchX = 0
+let startTouchY = 0
+let startPieceX = 0
+let startPieceY = 0
+
+// 计算是否全部成功
+const isSuccess = computed(() => {
+  return slots.value.every(s => s.filled)
+})
+
+const onTouchStart = (e: any, piece: Piece) => {
+  if (piece.isPlaced) return
+  
+  draggingId.value = piece.id
+  const touch = e.touches[0]
+  startTouchX = touch.clientX
+  startTouchY = touch.clientY
+  startPieceX = piece.x
+  startPieceY = piece.y
+}
+
+const onTouchMove = (e: any, piece: Piece) => {
+  if (draggingId.value !== piece.id) return
+  
+  const touch = e.touches[0]
+  const deltaX = touch.clientX - startTouchX
+  const deltaY = touch.clientY - startTouchY
+  
+  piece.x = startPieceX + deltaX
+  piece.y = startPieceY + deltaY
+}
+
+const onTouchEnd = (e: any, piece: Piece) => {
+  if (draggingId.value !== piece.id) return
+  draggingId.value = ''
+  
+  // 检查是否在目标区域附近
+  const targetSlot = slots.value.find(s => s.id === piece.targetId)
+  if (targetSlot && !targetSlot.filled) {
+    // 简单的碰撞检测
+    if (piece.y < -100) { 
+      // 成功吸附
+      targetSlot.filled = true
+      piece.isPlaced = true
+      piece.x = -9999
+      audioUtil.playSuccess()
+    } else {
+      // 弹回原位
+      piece.x = piece.startX
+      piece.y = piece.startY
+      audioUtil.playError()
+    }
+  }
+}
+
+const resetGame = () => {
+  slots.value.forEach(s => s.filled = false)
+  pieces.value = JSON.parse(JSON.stringify(initialPieces))
+}
+</script>
+
+<style>
+.container {
+  flex: 1;
+  background-color: #F8F5F0;
+  padding: 16px;
+  flex-direction: column;
+}
+.header {
+  margin-bottom: 20px;
+  flex-direction: column;
+}
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #3D3D3D;
+  margin-bottom: 8px;
+}
+.subtitle {
+  font-size: 14px;
+  color: #7A5C48;
+}
+.target-area {
+  height: 300px;
+  background-color: #EFEBE5;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.slot {
+  position: absolute;
+  border: 2px dashed #BDBDBD;
+  border-radius: 4px;
+  align-items: center;
+  justify-content: center;
+}
+.slot-filled {
+  border: none;
+}
+.slot-text {
+  font-size: 12px;
+  color: #9E9E9E;
+}
+.filled-piece {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+}
+.pieces-area {
+  height: 150px;
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.piece {
+  position: absolute;
+  border-radius: 4px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.dragging {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+.piece-text {
+  font-size: 14px;
+  color: #FFFFFF;
+  font-weight: bold;
+}
+.success-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.6);
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.success-box {
+  background-color: #FFFFFF;
+  width: 300px;
+  border-radius: 16px;
+  padding: 24px;
+  align-items: center;
+  flex-direction: column;
+}
+.success-title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #C44536;
+  margin-bottom: 16px;
+}
+.success-desc {
+  font-size: 14px;
+  color: #3D3D3D;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  text-align: center;
+}
+.success-btn {
+  background-color: #4A6B75;
+  padding: 10px 32px;
+  border-radius: 24px;
+}
+.success-btn-text {
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: bold;
+}
+</style>

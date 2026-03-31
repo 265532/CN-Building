@@ -1,0 +1,30 @@
+import { reactive } from 'vue'
+
+export type GlobalUserState = {
+  isLoggedIn: boolean
+  token: string
+  studyProgress: number
+}
+
+export const userStore = reactive<GlobalUserState>({
+  isLoggedIn: uni.getStorageSync('token') ? true : false,
+  token: uni.getStorageSync('token') as string || '',
+  studyProgress: 0
+} as GlobalUserState)
+
+export const login = (token: string) => {
+  userStore.isLoggedIn = true
+  userStore.token = token
+  uni.setStorageSync('token', token)
+}
+
+export const logout = () => {
+  userStore.isLoggedIn = false
+  userStore.token = ''
+  userStore.studyProgress = 0
+  uni.removeStorageSync('token')
+}
+
+export const updateStudyProgress = (progress: number) => {
+  userStore.studyProgress = progress
+}

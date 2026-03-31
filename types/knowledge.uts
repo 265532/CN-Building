@@ -1,0 +1,7 @@
+export type KnowledgeNode = {
+  id: string
+  title: string
+  content: string
+  type: string // e.g., 'architecture', 'history', 'culture'
+  relatedNodes: string[] // Array of node IDs
+}

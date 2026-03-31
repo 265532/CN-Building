@@ -1,0 +1,47 @@
+<template>
+  <view class="empty-container">
+    <image class="empty-icon" src="/static/empty.png" mode="aspectFit" v-if="showIcon"></image>
+    <view class="empty-icon-placeholder" v-else></view>
+    <text class="empty-text">{{ text }}</text>
+    <slot></slot>
+  </view>
+</template>
+
+<script setup lang="uts">
+defineProps({
+  text: {
+    type: String,
+    default: '暂无数据'
+  },
+  showIcon: {
+    type: Boolean,
+    default: false
+  }
+})
+</script>
+
+<style>
+.empty-container {
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+}
+.empty-icon {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 16px;
+}
+.empty-icon-placeholder {
+  width: 120px;
+  height: 120px;
+  background-color: #E0E0E0;
+  border-radius: 60px;
+  margin-bottom: 16px;
+}
+.empty-text {
+  font-size: 14px;
+  color: #9E9E9E;
+  margin-bottom: 16px;
+}
+</style>

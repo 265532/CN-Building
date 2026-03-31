@@ -1,0 +1,273 @@
+<template>
+  <view class="container">
+    <view class="header">
+      <text class="title">瓦当消消乐</text>
+      <text class="subtitle">点击相邻的瓦当进行交换，三个以上相连即可消除</text>
+      <text class="score">得分: {{ score }}</text>
+    </view>
+
+    <view class="board-container">
+      <view class="board" :style="{ width: boardSize + 'px', height: boardSize + 'px' }">
+        <view 
+          v-for="(row, rIndex) in grid" 
+          :key="'r'+rIndex" 
+          class="row"
+        >
+          <view 
+            v-for="(cell, cIndex) in row" 
+            :key="'c'+cIndex"
+            class="cell"
+            :class="{ 'selected': selectedCell && selectedCell.r === rIndex && selectedCell.c === cIndex }"
+            :style="{ width: cellSize + 'px', height: cellSize + 'px' }"
+            @click="onCellClick(rIndex, cIndex)"
+          >
+            <view 
+              class="tile" 
+              v-if="cell !== 0"
+              :style="{ backgroundColor: getTileColor(cell) }"
+            >
+              <text class="tile-text">{{ getTileText(cell) }}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script setup lang="uts">
+import { ref, onMounted } from 'vue'
+import { audioUtil } from '@/utils/audio.uts'
+
+const ROWS = 6
+const COLS = 6
+const TILE_TYPES = 4
+
+const boardSize = 300
+const cellSize = boardSize / COLS
+
+const score = ref(0)
+const grid = ref<number[][]>([])
+
+type Pos = { r: number, c: number }
+const selectedCell = ref<Pos | null>(null)
+
+// 初始化棋盘
+const initGrid = () => {
+  let newGrid: number[][] = []
+  for (let r = 0; r < ROWS; r++) {
+    let row: number[] = []
+    for (let c = 0; c < COLS; c++) {
+      row.push(Math.floor(Math.random() * TILE_TYPES) + 1)
+    }
+    newGrid.push(row)
+  }
+  grid.value = newGrid
+  // 简单处理：初始不消除
+}
+
+onMounted(() => {
+  initGrid()
+})
+
+function getTileColor(type: number): string {
+  const colors = ['#E8A38C', '#8CB8A3', '#A399C8', '#E6C280', '#C44536']
+  return colors[type - 1] || '#333'
+}
+
+function getTileText(type: number): string {
+  const texts = ['云纹', '四神', '文字', '莲花', '兽面']
+  return texts[type - 1] || '瓦'
+}
+
+function onCellClick(r: number, c: number) {
+  if (grid.value[r][c] === 0) return
+  
+  if (selectedCell.value == null) {
+    selectedCell.value = { r, c } as Pos
+  } else {
+    const sr = selectedCell.value!.r
+    const sc = selectedCell.value!.c
+    
+    // 判断是否相邻
+    const isAdjacent = (Math.abs(sr - r) === 1 && sc === c) || (Math.abs(sc - c) === 1 && sr === r)
+    
+    if (isAdjacent) {
+      swapTiles(sr, sc, r, c)
+      audioUtil.playClick()
+      // 简单延迟后检查消除
+      setTimeout(() => {
+        if (!checkMatches()) {
+          // 没匹配则换回来
+          swapTiles(sr, sc, r, c)
+          audioUtil.playError()
+        }
+      }, 300)
+    }
+    
+    selectedCell.value = null
+  }
+}
+
+function swapTiles(r1: number, c1: number, r2: number, c2: number) {
+  const temp = grid.value[r1][c1]
+  grid.value[r1][c1] = grid.value[r2][c2]
+  grid.value[r2][c2] = temp
+}
+
+function checkMatches(): boolean {
+  let matched = false
+  let toRemove: boolean[][] = []
+  for (let r = 0; r < ROWS; r++) {
+    let rowToRemove: boolean[] = []
+    for (let c = 0; c < COLS; c++) {
+      rowToRemove.push(false)
+    }
+    toRemove.push(rowToRemove)
+  }
+  
+  // 检查行
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS - 2; c++) {
+      let type = grid.value[r][c]
+      if (type !== 0 && type === grid.value[r][c+1] && type === grid.value[r][c+2]) {
+        toRemove[r][c] = true
+        toRemove[r][c+1] = true
+        toRemove[r][c+2] = true
+        matched = true
+      }
+    }
+  }
+  
+  // 检查列
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS - 2; r++) {
+      let type = grid.value[r][c]
+      if (type !== 0 && type === grid.value[r+1][c] && type === grid.value[r+2][c]) {
+        toRemove[r][c] = true
+        toRemove[r+1][c] = true
+        toRemove[r+2][c] = true
+        matched = true
+      }
+    }
+  }
+  
+  if (matched) {
+    audioUtil.playSuccess()
+    removeMatches(toRemove)
+  }
+  
+  return matched
+}
+
+function removeMatches(toRemove: boolean[][]) {
+  let count = 0
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (toRemove[r][c]) {
+        grid.value[r][c] = 0
+        count++
+      }
+    }
+  }
+  
+  score.value += count * 10
+  
+  // 下落和填充新瓦当
+  setTimeout(() => {
+    applyGravity()
+  }, 400)
+}
+
+function applyGravity() {
+  for (let c = 0; c < COLS; c++) {
+    let emptyRow = ROWS - 1
+    for (let r = ROWS - 1; r >= 0; r--) {
+      if (grid.value[r][c] !== 0) {
+        if (emptyRow !== r) {
+          grid.value[emptyRow][c] = grid.value[r][c]
+          grid.value[r][c] = 0
+        }
+        emptyRow--
+      }
+    }
+    
+    // 填充顶部
+    for (let r = emptyRow; r >= 0; r--) {
+      grid.value[r][c] = Math.floor(Math.random() * TILE_TYPES) + 1
+    }
+  }
+  
+  // 递归检查新生成的匹配
+  setTimeout(() => {
+    checkMatches()
+  }, 400)
+}
+</script>
+
+<style>
+.container {
+  flex: 1;
+  background-color: #F8F5F0;
+  padding: 16px;
+  align-items: center;
+}
+.header {
+  width: 100%;
+  margin-bottom: 30px;
+  align-items: center;
+  flex-direction: column;
+}
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #3D3D3D;
+  margin-bottom: 8px;
+}
+.subtitle {
+  font-size: 14px;
+  color: #7A5C48;
+  margin-bottom: 16px;
+  text-align: center;
+}
+.score {
+  font-size: 20px;
+  font-weight: bold;
+  color: #C44536;
+}
+.board-container {
+  background-color: #EFEBE5;
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.board {
+  flex-direction: column;
+}
+.row {
+  flex: 1;
+  flex-direction: row;
+}
+.cell {
+  flex: 1;
+  padding: 2px;
+  box-sizing: border-box;
+}
+.selected {
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 8px;
+}
+.tile {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.tile-text {
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: bold;
+}
+</style>

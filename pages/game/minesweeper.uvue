@@ -1,0 +1,288 @@
+<template>
+  <view class="container">
+    <view class="header">
+      <text class="title">古建扫雷</text>
+      <text class="subtitle">找出所有保存完好的古建筑，长按标记遗址</text>
+      <view class="status-bar">
+        <text class="status-text">剩余遗址: {{ mineCount - flagCount }}</text>
+        <text class="status-text">{{ gameOver ? (isWin ? '修复成功！' : '触发遗址！') : '进行中' }}</text>
+      </view>
+    </view>
+
+    <view class="board-container">
+      <view class="board">
+        <view 
+          v-for="(row, rIndex) in grid" 
+          :key="'r'+rIndex" 
+          class="row"
+        >
+          <view 
+            v-for="(cell, cIndex) in row" 
+            :key="'c'+cIndex"
+            class="cell"
+            :class="{ 'revealed': cell.revealed, 'mine': cell.revealed && cell.isMine }"
+            @click="onCellClick(rIndex, cIndex)"
+            @longpress="onCellLongPress(rIndex, cIndex)"
+          >
+            <text class="cell-text" v-if="cell.revealed && cell.isMine">💣</text>
+            <text class="cell-text" v-else-if="cell.revealed && cell.neighborMines > 0" :style="{ color: getNumberColor(cell.neighborMines) }">{{ cell.neighborMines }}</text>
+            <text class="cell-text" v-else-if="cell.isFlagged">🚩</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="btn-group">
+      <view class="restart-btn" @click="initGame">
+        <text class="restart-text">重新开始</text>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script setup lang="uts">
+import { ref, onMounted } from 'vue'
+import { audioUtil } from '@/utils/audio.uts'
+
+const ROWS = 8
+const COLS = 8
+const MINES = 10
+
+type Cell = {
+  r: number
+  c: number
+  isMine: boolean
+  revealed: boolean
+  isFlagged: boolean
+  neighborMines: number
+}
+
+const grid = ref<Cell[][]>([])
+const mineCount = ref(MINES)
+const flagCount = ref(0)
+const gameOver = ref(false)
+const isWin = ref(false)
+
+function initGame() {
+  gameOver.value = false
+  isWin.value = false
+  flagCount.value = 0
+  
+  let newGrid: Cell[][] = []
+  for (let r = 0; r < ROWS; r++) {
+    let row: Cell[] = []
+    for (let c = 0; c < COLS; c++) {
+      row.push({
+        r, c,
+        isMine: false,
+        revealed: false,
+        isFlagged: false,
+        neighborMines: 0
+      })
+    }
+    newGrid.push(row)
+  }
+  
+  // 随机放置雷
+  let placedMines = 0
+  while (placedMines < MINES) {
+    const r = Math.floor(Math.random() * ROWS)
+    const c = Math.floor(Math.random() * COLS)
+    if (!newGrid[r][c].isMine) {
+      newGrid[r][c].isMine = true
+      placedMines++
+    }
+  }
+  
+  // 计算周围雷数
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (!newGrid[r][c].isMine) {
+        let count = 0
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            const nr = r + dr
+            const nc = c + dc
+            if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && newGrid[nr][nc].isMine) {
+              count++
+            }
+          }
+        }
+        newGrid[r][c].neighborMines = count
+      }
+    }
+  }
+  
+  grid.value = newGrid
+}
+
+onMounted(() => {
+  initGame()
+})
+
+function onCellClick(r: number, c: number) {
+  if (gameOver.value) return
+  const cell = grid.value[r][c]
+  if (cell.revealed || cell.isFlagged) return
+  
+  cell.revealed = true
+  audioUtil.playClick()
+  
+  if (cell.isMine) {
+    gameOver.value = true
+    isWin.value = false
+    audioUtil.playError()
+    revealAllMines()
+  } else {
+    if (cell.neighborMines === 0) {
+      revealNeighbors(r, c)
+    }
+    checkWin()
+  }
+}
+
+function onCellLongPress(r: number, c: number) {
+  if (gameOver.value) return
+  const cell = grid.value[r][c]
+  if (cell.revealed) return
+  
+  cell.isFlagged = !cell.isFlagged
+  flagCount.value += cell.isFlagged ? 1 : -1
+}
+
+function revealNeighbors(r: number, c: number) {
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      const nr = r + dr
+      const nc = c + dc
+      if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+        const neighbor = grid.value[nr][nc]
+        if (!neighbor.revealed && !neighbor.isMine && !neighbor.isFlagged) {
+          neighbor.revealed = true
+          if (neighbor.neighborMines === 0) {
+            revealNeighbors(nr, nc)
+          }
+        }
+      }
+    }
+  }
+}
+
+function revealAllMines() {
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (grid.value[r][c].isMine) {
+        grid.value[r][c].revealed = true
+      }
+    }
+  }
+}
+
+function checkWin() {
+  let unrevealedSafeCells = 0
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (!grid.value[r][c].isMine && !grid.value[r][c].revealed) {
+        unrevealedSafeCells++
+      }
+    }
+  }
+  if (unrevealedSafeCells === 0) {
+    gameOver.value = true
+    isWin.value = true
+    audioUtil.playSuccess()
+  }
+}
+
+function getNumberColor(num: number): string {
+  const colors = ['#000', '#1E88E5', '#43A047', '#E53935', '#3949AB', '#8E24AA', '#00ACC1', '#424242', '#757575']
+  return colors[num] || '#000'
+}
+</script>
+
+<style>
+.container {
+  flex: 1;
+  background-color: #F8F5F0;
+  padding: 16px;
+  align-items: center;
+}
+.header {
+  width: 100%;
+  margin-bottom: 20px;
+  align-items: center;
+  flex-direction: column;
+}
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #3D3D3D;
+  margin-bottom: 8px;
+}
+.subtitle {
+  font-size: 14px;
+  color: #7A5C48;
+  margin-bottom: 16px;
+}
+.status-bar {
+  flex-direction: row;
+  justify-content: space-between;
+  width: 280px;
+  background-color: #EFEBE5;
+  padding: 10px 16px;
+  border-radius: 8px;
+}
+.status-text {
+  font-size: 16px;
+  font-weight: bold;
+  color: #3D3D3D;
+}
+.board-container {
+  background-color: #BDBDBD;
+  padding: 4px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+.board {
+  flex-direction: column;
+}
+.row {
+  flex-direction: row;
+}
+.cell {
+  width: 35px;
+  height: 35px;
+  background-color: #E0E0E0;
+  border: 2px solid;
+  border-top-color: #FFFFFF;
+  border-left-color: #FFFFFF;
+  border-bottom-color: #9E9E9E;
+  border-right-color: #9E9E9E;
+  align-items: center;
+  justify-content: center;
+}
+.revealed {
+  background-color: #EFEBE5;
+  border: 1px solid #BDBDBD;
+}
+.mine {
+  background-color: #EF9A9A;
+}
+.cell-text {
+  font-size: 18px;
+  font-weight: bold;
+}
+.btn-group {
+  margin-top: 20px;
+}
+.restart-btn {
+  background-color: #4A6B75;
+  padding: 12px 32px;
+  border-radius: 24px;
+}
+.restart-text {
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: bold;
+}
+</style>

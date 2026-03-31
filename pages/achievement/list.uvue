@@ -1,0 +1,54 @@
+<template>
+  <view class="container" v-if="isLoading">
+    <data-loading text="正在加载成就数据..."></data-loading>
+  </view>
+  <list-view class="container" v-else>
+    <list-item class="grid">
+      <view class="medal-card" hover-class="medal-card-hover" v-for="item in achievements" :key="item.id">
+        <view :class="['medal-icon', item.icon]"></view>
+        <text class="medal-name">{{ item.title }}</text>
+        <text class="medal-level">{{ getLevelText(item.icon) }}</text>
+        <text class="medal-desc">{{ item.description }}</text>
+      </view>
+    </list-item>
+  </list-view>
+</template>
+
+<script setup lang="uts">
+import { ref, onMounted } from 'vue'
+import { fetchAchievements } from '../../services/achievement.uts'
+import type { Achievement } from '../../types/achievement.uts'
+import DataLoading from '../../components/DataLoading/DataLoading.uvue'
+
+const isLoading = ref(true)
+const achievements = ref<Achievement[]>([])
+
+onMounted(async () => {
+  isLoading.value = true
+  achievements.value = await fetchAchievements()
+  isLoading.value = false
+})
+
+const getLevelText = (icon: string): string => {
+  if (icon.includes('bronze')) return '青铜徽章'
+  if (icon.includes('silver')) return '银质徽章'
+  if (icon.includes('gold')) return '金质徽章'
+  if (icon.includes('diamond')) return '钻石徽章'
+  return '未知徽章'
+}
+</script>
+
+<style>
+.container { flex: 1; padding: 16px; background-color: #F8F5F0; }
+.grid { flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
+.medal-card { width: 48%; background-color: #FFFFFF; border: 1px solid #E0E0E0; border-radius: 12px; padding: 20px 12px; align-items: center; margin-bottom: 16px; transition: transform 0.2s; }
+.medal-card-hover { transform: scale(0.98); opacity: 0.9; }
+.medal-icon { width: 64px; height: 64px; border-radius: 32px; margin-bottom: 12px; border: 4px solid #F8F5F0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.medal-bronze { background-color: #CD7F32; }
+.medal-silver { background-color: #C0C0C0; }
+.medal-gold { background-color: #FFD700; }
+.medal-diamond { background-color: #B9F2FF; }
+.medal-name { font-size: 16px; font-weight: bold; color: #3D3D3D; margin-bottom: 4px; }
+.medal-level { font-size: 12px; color: #9E9E9E; background-color: rgba(158, 158, 158, 0.1); padding: 2px 6px; border-radius: 4px; margin-bottom: 8px; }
+.medal-desc { font-size: 12px; color: #9E9E9E; text-align: center; }
+</style>

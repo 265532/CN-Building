@@ -1,0 +1,50 @@
+<template>
+  <scroll-view class="container" scroll-y="true">
+    <view class="header-card">
+      <text class="title">{{ learnData.headerTitle }}</text>
+      <text class="subtitle">{{ learnData.headerSubtitle }}</text>
+    </view>
+
+    <view class="list">
+      <view class="item" v-for="item in learnData.paths" :key="item.id" @click="goTo(item.url)">
+        <text class="item-title">{{ item.title }}</text>
+        <text class="item-desc">{{ item.desc }}</text>
+      </view>
+    </view>
+  </scroll-view>
+</template>
+
+<script setup lang="uts">
+import { ref, onMounted } from 'vue'
+import { fetchLearnData } from '../../services/learn.uts'
+import type { LearnData } from '../../types/learn.uts'
+
+const learnData = ref<LearnData>({
+  headerTitle: '',
+  headerSubtitle: '',
+  paths: []
+} as LearnData)
+
+onMounted(async () => {
+  learnData.value = await fetchLearnData()
+})
+
+const goTo = (url: string) => { 
+  if (url.length > 0) {
+    uni.navigateTo({ url }) 
+  } else {
+    uni.showToast({ title: '敬请期待', icon: 'none' })
+  }
+}
+</script>
+
+<style>
+.container { flex: 1; padding: 16px; background-color: #F8F5F0; }
+.header-card { background-color: #4A6B75; padding: 24px; border-radius: 8px; margin-bottom: 24px; }
+.title { color: #F8F5F0; font-size: 20px; font-weight: bold; margin-bottom: 8px; }
+.subtitle { color: #F8F5F0; font-size: 14px; opacity: 0.9; }
+.list { flex-direction: column; }
+.item { background-color: #F8F5F0; border: 1px solid #E0E0E0; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.item-title { font-size: 16px; font-weight: bold; color: #3D3D3D; margin-bottom: 4px; }
+.item-desc { font-size: 14px; color: #9E9E9E; }
+</style>

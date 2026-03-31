@@ -1,0 +1,185 @@
+<template>
+  <view class="container">
+    <view class="header">
+      <text class="title">欢迎来到</text>
+      <text class="subtitle">中国古建筑智慧学习平台</text>
+    </view>
+    
+    <view class="form-container">
+      <view class="input-group">
+        <text class="label">账号</text>
+        <input class="input" v-model="username" placeholder="请输入手机号/用户名" />
+      </view>
+      
+      <view class="input-group">
+        <text class="label">密码</text>
+        <input class="input" v-model="password" type="password" placeholder="请输入密码（至少6位）" />
+      </view>
+      
+      <custom-button text="登录" type="primary" size="large" @click="handleLogin" class="login-btn-custom"></custom-button>
+      
+      <view class="action-links">
+        <text class="link-text" @click="goToRegister">注册账号</text>
+      </view>
+      
+      <view class="wechat-login">
+        <button class="wechat-btn" open-type="getPhoneNumber" @getphonenumber="handleWechatLogin">
+          微信一键登录
+        </button>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script setup lang="uts">
+import { ref } from 'vue'
+import { performLogin, performAccountLogin } from '../../services/user.uts'
+
+import CustomButton from '../../components/CustomButton/CustomButton.uvue'
+
+const username = ref('')
+const password = ref('')
+
+const handleLogin = async () => {
+  if (!username.value || !password.value) {
+    uni.showToast({ title: '请输入账号和密码', icon: 'none' })
+    return
+  }
+  
+  if (password.value.length < 6) {
+    uni.showToast({ title: '密码长度不能少于6位', icon: 'none' })
+    return
+  }
+  
+  // 可以加入更严格的校验：必须包含字母和数字
+  const hasLetter = /[a-zA-Z]/.test(password.value)
+  const hasNumber = /[0-9]/.test(password.value)
+  if (!hasLetter || !hasNumber) {
+    uni.showToast({ title: '密码必须包含字母和数字', icon: 'none' })
+    return
+  }
+
+  const success = await performAccountLogin(username.value, password.value)
+  if (success) {
+    uni.showToast({ title: '登录成功', icon: 'success' })
+    setTimeout(() => {
+      uni.navigateBack()
+    }, 1500)
+  }
+}
+
+const goToRegister = () => {
+  uni.navigateTo({
+    url: '/pages/auth/register'
+  })
+}
+
+const handleWechatLogin = (e: any) => {
+  // 获取用户手机号的回调参数
+  const detail = e.detail
+  if (detail.errMsg === 'getPhoneNumber:ok') {
+    uni.login({
+      provider: 'weixin',
+      success: async (loginRes) => {
+        if (loginRes.code) {
+          const success = await performLogin(loginRes.code, detail.encryptedData, detail.iv)
+          if (success) {
+            uni.showToast({ title: '微信登录成功', icon: 'success' })
+            setTimeout(() => {
+              uni.navigateBack()
+            }, 1500)
+          }
+        } else {
+          uni.showToast({ title: '获取登录凭证失败', icon: 'none' })
+        }
+      },
+      fail: () => {
+        uni.showToast({ title: '微信登录失败', icon: 'none' })
+      }
+    })
+  } else {
+    uni.showToast({ title: '用户拒绝授权', icon: 'none' })
+  }
+}
+</script>
+
+<style>
+.container {
+  flex: 1;
+  background-color: #F8F5F0;
+  padding: 32px 24px;
+}
+
+.header {
+  margin-top: 60px;
+  margin-bottom: 48px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #3D3D3D;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 20px;
+  color: #7A5C48;
+}
+
+.form-container {
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.input-group {
+  margin-bottom: 24px;
+}
+
+.label {
+  font-size: 14px;
+  color: #3D3D3D;
+  margin-bottom: 8px;
+}
+
+.input {
+  height: 44px;
+  background-color: #F8F5F0;
+  border-radius: 8px;
+  padding: 0 16px;
+  font-size: 16px;
+}
+
+.login-btn-custom {
+  margin-top: 16px;
+}
+
+.action-links {
+  margin-top: 16px;
+  align-items: center;
+}
+
+.link-text {
+  font-size: 14px;
+  color: #7A5C48;
+  text-decoration: underline;
+}
+
+.wechat-login {
+  margin-top: 24px;
+  align-items: center;
+}
+
+.wechat-btn {
+  background-color: transparent;
+  font-size: 14px;
+  color: #09BB07;
+  text-decoration: underline;
+  border: none;
+}
+.wechat-btn::after {
+  border: none;
+}
+</style>

@@ -1,0 +1,234 @@
+<template>
+	<view class="container">
+		<scroll-view class="chat-area" scroll-y="true">
+			<view 
+        v-for="msg in messages" 
+        :key="msg.id"
+        :class="['message', msg.role === 'ai' ? 'ai-msg' : 'user-msg']"
+      >
+        <image v-if="msg.imageUrl" :src="msg.imageUrl" class="msg-image" mode="widthFix"></image>
+				<text class="msg-text">{{ msg.content }}</text>
+			</view>
+		</scroll-view>
+
+		<view class="action-area">
+			<view class="action-btn" @click="handleChooseImage">
+				<text class="action-text">拍照识别</text>
+			</view>
+			<view class="action-btn" @click="quickAsk('知识解析')">
+				<text class="action-text">知识解析</text>
+			</view>
+		</view>
+
+    <view class="preview-area" v-if="selectedImage">
+      <image :src="selectedImage" class="preview-img" mode="aspectFill"></image>
+      <text class="remove-img" @click="removeImage">✕</text>
+    </view>
+
+		<view class="input-area">
+			<input class="input-box" placeholder="向 AI 提问..." v-model="inputText" />
+			<button class="send-btn" @click="send">发送</button>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+import { ref, onMounted, onUnmounted } from 'vue'
+import { sendMessageToAI } from '../../services/ai.uts'
+import type { ChatMessage } from '../../types/ai.uts'
+
+const messages = ref<ChatMessage[]>([
+  {
+    id: 'init',
+    role: 'ai',
+    content: '你好！我是你的古建筑 AI 导学助手。请问有什么我可以帮你的吗？支持发送照片让我为您进行视觉识别与结构解析哦！'
+  }
+])
+const inputText = ref('')
+const selectedImage = ref('')
+
+onMounted(() => {
+  uni.$on('onAiPhotoSelected', (photoPath: string) => {
+    selectedImage.value = photoPath
+  })
+})
+
+onUnmounted(() => {
+  uni.$off('onAiPhotoSelected')
+})
+
+const handleChooseImage = () => {
+  uni.navigateTo({ url: '/pages/ai/camera' })
+}
+
+const removeImage = () => {
+  selectedImage.value = ''
+}
+
+const send = async () => {
+  if (!inputText.value.trim() && !selectedImage.value) return
+  
+  const userMsgText = inputText.value || '请分析这张图片中的古建筑构件。'
+  const imgUrl = selectedImage.value
+  
+  messages.value.push({
+    id: 'user_' + Date.now(),
+    role: 'user',
+    content: userMsgText,
+    imageUrl: imgUrl
+  } as ChatMessage)
+  
+  inputText.value = ''
+  selectedImage.value = ''
+  
+  // 预先插入一条空的 AI 消息用于流式输出展示
+  const aiMsgId = 'ai_' + Date.now()
+  messages.value.push({
+    id: aiMsgId,
+    role: 'ai',
+    content: ''
+  } as ChatMessage)
+
+  // 截取发给 AI 的上下文（排除刚刚插入的空消息）
+  const contextMessages = messages.value.slice(0, -1)
+
+  const finalAiMsg = await sendMessageToAI(
+    contextMessages, 
+    userMsgText, 
+    imgUrl,
+    (chunk) => {
+      // 流式更新回调
+      const msg = messages.value.find(m => m.id === aiMsgId)
+      if (msg) {
+        msg.content += chunk
+      }
+    }
+  )
+
+  // 如果不支持流式，或者流式结束后确保最终内容正确
+  const msg = messages.value.find(m => m.id === aiMsgId)
+  if (msg && !msg.content) {
+    msg.content = finalAiMsg.content
+  }
+}
+
+const quickAsk = (text: string) => {
+  inputText.value = text
+  send()
+}
+</script>
+
+<style>
+	.container {
+		flex: 1;
+		background-color: #F8F5F0;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.chat-area {
+		flex: 1;
+		padding: 16px;
+	}
+
+	.message {
+		max-width: 80%;
+		padding: 12px;
+		border-radius: 8px;
+		margin-bottom: 16px;
+    flex-direction: column;
+	}
+
+	.ai-msg {
+		background-color: #FFFFFF;
+		border: 1px solid #E0E0E0;
+		align-self: flex-start;
+	}
+
+	.user-msg {
+		background-color: #E8F5E9;
+		border: 1px solid #C8E6C9;
+		align-self: flex-end;
+	}
+
+	.msg-text {
+		font-size: 14px;
+		color: #3D3D3D;
+	}
+
+  .msg-image {
+    width: 150px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+
+	.action-area {
+		flex-direction: row;
+		padding: 8px 16px;
+	}
+
+	.action-btn {
+		background-color: #7A5C48;
+		padding: 8px 16px;
+		border-radius: 20px;
+		margin-right: 8px;
+	}
+
+	.action-text {
+		color: #FFFFFF;
+		font-size: 12px;
+	}
+
+  .preview-area {
+    padding: 8px 16px;
+    flex-direction: row;
+    position: relative;
+    height: 60px;
+  }
+  .preview-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 4px;
+  }
+  .remove-img {
+    position: absolute;
+    left: 56px;
+    top: 4px;
+    background-color: rgba(0,0,0,0.5);
+    color: #FFF;
+    font-size: 10px;
+    width: 16px;
+    height: 16px;
+    text-align: center;
+    line-height: 16px;
+    border-radius: 8px;
+  }
+
+	.input-area {
+		flex-direction: row;
+		padding: 12px 16px;
+		background-color: #FFFFFF;
+		border-top: 1px solid #E0E0E0;
+		align-items: center;
+	}
+
+	.input-box {
+		flex: 1;
+		height: 36px;
+		background-color: #F8F5F0;
+		border-radius: 18px;
+		padding: 0 16px;
+		font-size: 14px;
+	}
+
+	.send-btn {
+		margin-left: 8px;
+		background-color: #C44536;
+		color: #FFFFFF;
+		font-size: 14px;
+		border-radius: 18px;
+		padding: 0 16px;
+		height: 36px;
+		line-height: 36px;
+	}
+</style>

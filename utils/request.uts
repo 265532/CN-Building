@@ -1,0 +1,44 @@
+import { userStore, logout } from '../store/user.uts'
+
+type RequestOptions = {
+  url: string
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  data?: any
+  header?: any
+}
+
+export function request<T>(options: RequestOptions): Promise<T> {
+  return new Promise((resolve, reject) => {
+    // 注入 Token
+    const header = options.header || {}
+    if (userStore.isLoggedIn && userStore.token) {
+      header['Authorization'] = `Bearer ${userStore.token}`
+    }
+    
+    // 注入多语言标头 (假定基于本地缓存设置)
+    const lang = uni.getStorageSync('lang') as string || 'zh-CN'
+    header['Accept-Language'] = lang
+
+    uni.request({
+      url: options.url,
+      method: options.method || 'GET',
+      data: options.data,
+      header: header,
+      success: (res) => {
+        if (res.statusCode === 401) {
+          // Token 过期，自动登出并跳转登录
+          logout()
+          uni.navigateTo({ url: '/pages/auth/login' })
+          reject(new Error('Unauthorized'))
+        } else if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(res.data as T)
+        } else {
+          reject(new Error(`Server error: ${res.statusCode}`))
+        }
+      },
+      fail: (err) => {
+        reject(err)
+      }
+    })
+  })
+}

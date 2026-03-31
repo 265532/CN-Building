@@ -1,0 +1,62 @@
+export class AudioUtil {
+  private static instance: AudioUtil
+  private clickSound: InnerAudioContext | null = null
+  private successSound: InnerAudioContext | null = null
+  private errorSound: InnerAudioContext | null = null
+
+  private constructor() {
+    this.init()
+  }
+
+  public static getInstance(): AudioUtil {
+    if (AudioUtil.instance == null) {
+      AudioUtil.instance = new AudioUtil()
+    }
+    return AudioUtil.instance
+  }
+
+  private init() {
+    // 创建音效上下文
+    // 注意：实际项目中需准备音效文件存放在 static/audio/ 目录下
+    // 这里做占位处理
+    try {
+      this.clickSound = uni.createInnerAudioContext()
+      // this.clickSound!.src = '/static/audio/click.mp3'
+      
+      this.successSound = uni.createInnerAudioContext()
+      // this.successSound!.src = '/static/audio/success.mp3'
+      
+      this.errorSound = uni.createInnerAudioContext()
+      // this.errorSound!.src = '/static/audio/error.mp3'
+    } catch (e) {
+      console.error('Audio init failed', e)
+    }
+  }
+
+  public playClick() {
+    if (this.clickSound != null) {
+      // 占位注释，当有真实音频文件时解除注释
+      // this.clickSound!.stop()
+      // this.clickSound!.play()
+      console.log('play click sound')
+    }
+  }
+
+  public playSuccess() {
+    if (this.successSound != null) {
+      // this.successSound!.stop()
+      // this.successSound!.play()
+      console.log('play success sound')
+    }
+  }
+
+  public playError() {
+    if (this.errorSound != null) {
+      // this.errorSound!.stop()
+      // this.errorSound!.play()
+      console.log('play error sound')
+    }
+  }
+}
+
+export const audioUtil = AudioUtil.getInstance()

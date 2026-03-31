@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": false,
+    "baseUrl": "./",
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    }
+  },
+  "include": [
+    "pages/**/*.ts",
+    "pages/**/*.uts",
+    "pages/**/*.vue",
+    "pages/**/*.uvue",
+    "components/**/*.ts",
+    "components/**/*.uts",
+    "components/**/*.vue",
+    "components/**/*.uvue",
+    "utils/**/*.ts",
+    "utils/**/*.uts",
+    "services/**/*.ts",
+    "services/**/*.uts",
+    "store/**/*.ts",
+    "store/**/*.uts",
+    "App.uvue",
+    "main.uts"
+  ]
+}

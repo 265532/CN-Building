@@ -1,0 +1,31 @@
+<template>
+  <scroll-view class="container" scroll-y="true">
+    <view class="content">
+      <text class="title">民居建筑演变</text>
+      <text class="desc">本专题带您深入了解中国传统民居的历史演变与地域特色...</text>
+      <view class="placeholder">
+        <text class="placeholder-text">[3D模型/图文详情 占位]</text>
+      </view>
+    </view>
+  </scroll-view>
+</template>
+
+<script setup lang="uts">
+import { onLoad } from '@dcloudio/uni-app'
+
+onLoad((options: UTSJSONObject) => {
+  const id = options['id'] as string | null
+  if (id != null) {
+    console.log('topic id:', id)
+  }
+})
+</script>
+
+<style>
+.container { flex: 1; padding: 16px; background-color: #F8F5F0; }
+.content { background-color: #FFFFFF; padding: 24px; border-radius: 8px; border: 1px solid #E0E0E0; }
+.title { font-size: 20px; font-weight: bold; color: #3D3D3D; margin-bottom: 16px; }
+.desc { font-size: 14px; color: #9E9E9E; margin-bottom: 24px; line-height: 1.5; }
+.placeholder { height: 200px; background-color: rgba(158, 158, 158, 0.1); border: 1px dashed #9E9E9E; border-radius: 8px; align-items: center; justify-content: center; }
+.placeholder-text { color: #9E9E9E; font-size: 14px; }
+</style>

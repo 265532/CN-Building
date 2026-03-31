@@ -1,0 +1,170 @@
+<template>
+  <view class="container">
+    <!-- 顶部专题分类筛选 -->
+    <scroll-view class="category-scroll" scroll-x="true" :show-scrollbar="false">
+      <view class="category-list">
+        <text 
+          v-for="cat in categories" 
+          :key="cat.value"
+          :class="['category-item', activeCategory === cat.value ? 'category-active' : '']"
+          @click="onCategoryChange(cat.value)"
+        >
+          {{ cat.label }}
+        </text>
+      </view>
+    </scroll-view>
+
+    <map 
+      class="map-view" 
+      :latitude="currentLat" 
+      :longitude="currentLng" 
+      :scale="14"
+      :show-location="true"
+      :markers="markers"
+      @markertap="onMarkerTap"
+      @callouttap="onCalloutTap"
+    ></map>
+    
+    <view class="search-panel">
+      <input class="search-input" placeholder="搜索附近古建筑" />
+      <scroll-view class="nearby-list" scroll-y="true">
+        <view class="place-item" v-for="place in places" :key="place.id">
+          <view class="place-info">
+            <text class="place-name">{{ place.name }}</text>
+            <text class="place-dist">距离 {{ place.distance }}</text>
+          </view>
+          <text class="route-btn" @click="planRoute(place)">路线</text>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+</template>
+
+<script setup lang="uts">
+import { ref, onMounted } from 'vue'
+import { fetchMapMarkers, fetchNearbyPlaces } from '../../services/map.uts'
+import type { MapMarker, Place } from '../../types/map.uts'
+
+const categories = [
+  { label: '全部', value: 'all' },
+  { label: '民居', value: 'minju' },
+  { label: '官府', value: 'guanfu' },
+  { label: '皇宫', value: 'huanggong' },
+  { label: '园林', value: 'yuanlin' }
+]
+const activeCategory = ref('all')
+
+const markers = ref<MapMarker[]>([])
+const places = ref<Place[]>([])
+const currentLat = ref<number>(39.916)
+const currentLng = ref<number>(116.397)
+
+onMounted(() => {
+  // 获取真实地理位置
+  uni.getLocation({
+    type: 'wgs84',
+    success: async (res) => {
+      currentLat.value = res.latitude
+      currentLng.value = res.longitude
+      await loadMapData(res.latitude, res.longitude, activeCategory.value)
+    },
+    fail: async (err) => {
+      console.error('获取定位失败，使用默认坐标', err)
+      // 降级处理：定位失败使用默认坐标(北京)
+      await loadMapData(currentLat.value, currentLng.value, activeCategory.value)
+      uni.showToast({ title: '定位失败，已使用默认位置', icon: 'none' })
+    }
+  })
+})
+
+const onCategoryChange = async (cat: string) => {
+  if (activeCategory.value === cat) return
+  activeCategory.value = cat
+  await loadMapData(currentLat.value, currentLng.value, cat)
+}
+
+const loadMapData = async (lat: number, lng: number, category: string) => {
+  markers.value = await fetchMapMarkers(lat, lng, category)
+  places.value = await fetchNearbyPlaces(lat, lng, category)
+}
+
+const onMarkerTap = (e: any) => {
+  const markerId = e.detail.markerId as number
+  const marker = markers.value.find(m => m.id === markerId)
+  if (marker != null) {
+    uni.showToast({ title: `点击了: ${marker.title}`, icon: 'none' })
+  }
+}
+
+const onCalloutTap = (e: any) => {
+  const markerId = e.detail.markerId as number
+  const marker = markers.value.find(m => m.id === markerId)
+  if (marker != null) {
+    uni.showModal({
+      title: marker.title,
+      content: marker.address ?? '暂无详细地址信息',
+      showCancel: false,
+      confirmText: '我知道了'
+    })
+  }
+}
+
+const planRoute = (place: Place) => {
+  const marker = markers.value.find(m => m.id === place.id)
+  if (marker != null) {
+    uni.openLocation({
+      latitude: marker.latitude,
+      longitude: marker.longitude,
+      name: marker.title,
+      address: place.address ?? '未知地址',
+      success: function () {
+        console.log('打开地图成功')
+      },
+      fail: function (err) {
+        console.error('打开地图失败', err)
+        uni.showToast({ title: '打开地图失败', icon: 'none' })
+      }
+    })
+  } else {
+    uni.showToast({ title: '无法获取位置信息', icon: 'none' })
+  }
+}
+</script>
+
+<style>
+.container { flex: 1; flex-direction: column; background-color: #F8F5F0; }
+
+.category-scroll {
+  height: 48px;
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #E0E0E0;
+}
+.category-list {
+  flex-direction: row;
+  align-items: center;
+  padding: 0 16px;
+  height: 48px;
+}
+.category-item {
+  font-size: 14px;
+  color: #9E9E9E;
+  margin-right: 24px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  background-color: #F8F5F0;
+}
+.category-active {
+  color: #FFFFFF;
+  background-color: #7A5C48;
+}
+
+.map-view { flex: 1; width: 100%; }
+.search-panel { position: absolute; bottom: 0; left: 0; right: 0; background-color: #FFFFFF; padding: 16px; border-top-left-radius: 16px; border-top-right-radius: 16px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+.search-input { height: 40px; background-color: #F8F5F0; border-radius: 8px; padding: 0 12px; font-size: 14px; margin-bottom: 16px; }
+.nearby-list { flex-direction: column; }
+.place-item { flex-direction: row; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #E0E0E0; }
+.place-info { flex-direction: column; flex: 1; }
+.place-name { font-size: 16px; color: #3D3D3D; font-weight: bold; margin-bottom: 4px; }
+.place-dist { font-size: 14px; color: #9E9E9E; }
+.route-btn { background-color: #7A5C48; color: #FFFFFF; font-size: 14px; padding: 6px 16px; border-radius: 16px; }
+</style>

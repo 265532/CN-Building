@@ -1,0 +1,18 @@
+export type TopicPath = {
+  id: string
+  name: string
+  url: string
+}
+
+export type CrossCulturalItem = {
+  id: string
+  tag: string
+  title: string
+  description: string
+  url: string
+}
+
+export type HomeData = {
+  topics: TopicPath[]
+  crossCulturalList: CrossCulturalItem[]
+}

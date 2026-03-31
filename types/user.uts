@@ -1,0 +1,27 @@
+export type Medal = {
+  id: string
+  name: string
+  type: string // 'bronze' | 'silver' | 'gold'
+}
+
+export type StudyRecord = {
+  id: string
+  title: string
+  date: string
+  duration: string
+}
+
+export type RadarDimension = {
+  name: string
+  value: number // 0-100
+}
+
+export type UserInfo = {
+  id: string
+  username: string
+  level: string
+  studyDays: number
+  medals: Medal[]
+  recentRecords: StudyRecord[]
+  knowledgeRadar: RadarDimension[]
+}

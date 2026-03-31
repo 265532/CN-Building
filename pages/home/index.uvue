@@ -1,0 +1,103 @@
+<template>
+  <view class="container" v-if="isLoading">
+    <data-loading text="正在加载首页数据..."></data-loading>
+  </view>
+  <list-view class="container" v-else>
+    <list-item>
+      <!-- Hero Section -->
+      <view class="hero">
+        <text class="hero-title">探索中国古建筑</text>
+        <text class="hero-subtitle">沉浸式了解东方建筑美学与智慧</text>
+        <custom-button text="开始导览" type="primary" size="small" @click="startTour"></custom-button>
+      </view>
+    </list-item>
+
+    <list-item>
+      <!-- Thematic Paths -->
+      <view class="section">
+        <text class="section-title">专题学习路径</text>
+        <view class="grid">
+          <view class="card" hover-class="card-hover" v-for="topic in homeData.topics" :key="topic.id" @click="goTo(topic.url)">
+            <text class="card-text">{{ topic.name }}</text>
+          </view>
+        </view>
+      </view>
+    </list-item>
+
+    <list-item>
+      <!-- Cross-cultural -->
+      <view class="section">
+        <text class="section-title">跨文化对照学习</text>
+        <view class="list-card" hover-class="list-card-hover" v-for="item in homeData.crossCulturalList" :key="item.id" @click="goTo(item.url)">
+          <view class="list-img"></view>
+          <view class="list-info">
+            <text class="tag">{{ item.tag }}</text>
+            <text class="list-title">{{ item.title }}</text>
+            <text class="list-desc">{{ item.description }}</text>
+          </view>
+        </view>
+      </view>
+    </list-item>
+  </list-view>
+</template>
+
+<script setup lang="uts">
+import { ref, onMounted } from 'vue'
+import { fetchHomeData } from '../../services/home.uts'
+import type { HomeData } from '../../types/home.uts'
+import CustomButton from '../../components/CustomButton/CustomButton.uvue'
+import DataLoading from '../../components/DataLoading/DataLoading.uvue'
+
+const isLoading = ref(true)
+const homeData = ref<HomeData>({
+  topics: [],
+  crossCulturalList: []
+} as HomeData)
+
+onMounted(async () => {
+  isLoading.value = true
+  homeData.value = await fetchHomeData()
+  isLoading.value = false
+})
+
+const startTour = () => {
+  console.log('Start tour')
+}
+const goTo = (url: string) => {
+  uni.navigateTo({
+    url,
+    fail: (err) => {
+      console.error('Navigation failed:', err)
+      uni.switchTab({
+        url,
+        fail: (err2) => {
+          console.error('SwitchTab failed:', err2)
+        }
+      })
+    }
+  })
+}
+</script>
+
+<style>
+.container { flex: 1; padding: 16px; background-color: #F8F5F0; }
+.hero { background-color: #7A5C48; padding: 24px; border-radius: 8px; margin-bottom: 24px; }
+.hero-title { color: #F8F5F0; font-size: 24px; font-weight: bold; margin-bottom: 8px; }
+.hero-subtitle { color: #F8F5F0; font-size: 16px; opacity: 0.9; margin-bottom: 16px; }
+
+.section { margin-bottom: 24px; }
+.section-title { font-size: 18px; font-weight: bold; color: #3D3D3D; margin-bottom: 16px; }
+
+.grid { flex-direction: row; justify-content: space-between; }
+.card { flex: 1; background-color: #F8F5F0; border: 1px solid #E0E0E0; border-radius: 8px; padding: 16px; align-items: center; margin: 0 4px; }
+.card-hover { background-color: #E0E0E0; opacity: 0.8; }
+.card-text { font-size: 14px; color: #3D3D3D; font-weight: bold; }
+
+.list-card { flex-direction: row; background-color: #F8F5F0; border: 1px solid #E0E0E0; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.list-card-hover { background-color: #E0E0E0; opacity: 0.8; }
+.list-img { width: 80px; height: 80px; background-color: #9E9E9E; border-radius: 8px; margin-right: 16px; }
+.list-info { flex: 1; justify-content: center; }
+.tag { font-size: 12px; color: #4A6B75; background-color: rgba(74, 107, 117, 0.1); padding: 2px 6px; border-radius: 4px; align-self: flex-start; margin-bottom: 4px; }
+.list-title { font-size: 16px; font-weight: bold; color: #3D3D3D; margin-bottom: 4px; }
+.list-desc { font-size: 14px; color: #9E9E9E; }
+</style>
