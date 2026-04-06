@@ -1,0 +1,94 @@
+import { KnowledgeNode } from '../../types/knowledge.uts'
+
+export function getMockKnowledgeNode(id: string): KnowledgeNode {
+  const nodes: Record<string, KnowledgeNode> = {
+    'dougong': {
+      id: 'dougong',
+      title: '斗拱',
+      content: '斗拱是中国古代建筑特有的一种结构。在立柱和横梁交接处，从柱顶上加的一层层探出成弓形的承重结构叫拱，拱与拱之间垫的方形木块叫斗。它是中国建筑最典型的特征之一。',
+      type: 'architecture',
+      relatedNodes: ['liangjia', 'caise']
+    },
+    'liangjia': {
+      id: 'liangjia',
+      title: '梁架结构',
+      content: '中国古建筑的梁架结构主要有抬梁式、穿斗式和井干式三种。其中抬梁式应用最为广泛，常用于宫殿、庙宇等大型建筑。',
+      type: 'architecture',
+      relatedNodes: ['dougong', 'wazuo']
+    },
+    'wazuo': {
+      id: 'wazuo',
+      title: '瓦作工艺',
+      content: '瓦作是古建筑“八大作”之一。主要包括屋面铺瓦、脊饰制作等。常见的有黄琉璃瓦（皇家建筑）、灰筒瓦（民居、官府）等。',
+      type: 'craft',
+      relatedNodes: ['liangjia', 'caise']
+    },
+    'caise': {
+      id: 'caise',
+      title: '彩画装饰',
+      content: '彩画是古建筑表面的一种装饰手段。不仅美观，还能防腐防蛀。分为和玺彩画（等级最高）、旋子彩画、苏式彩画等。',
+      type: 'decoration',
+      relatedNodes: ['dougong', 'wazuo']
+    },
+    'crosscultural': {
+      id: 'crosscultural',
+      title: '中西建筑符号对照',
+      content: '东方木结构建筑体系强调“天人合一”与横向延伸（如故宫），西方石结构建筑体系强调“神权至上”与垂直伸展（如哥特式教堂）。',
+      type: 'culture',
+      relatedNodes: ['dougong', 'style-comparison']
+    },
+    'style-comparison': {
+      id: 'style-comparison',
+      title: '飞檐与哥特尖顶',
+      content: '飞檐使沉重的屋顶显得轻盈，向上微翘，象征着东方的含蓄与灵动；哥特尖顶直插云霄，表达了西方人对神性的向往与力量感。',
+      type: 'culture',
+      relatedNodes: ['crosscultural', 'caise']
+    },
+    'xumizuo': {
+      id: 'xumizuo',
+      title: '须弥座',
+      content: '须弥座又名“座”，是中国古建筑基座的一种。它是由佛座演变而来，等级较高，常用于宫殿、坛庙、塔基等建筑。',
+      type: 'architecture',
+      relatedNodes: ['liangjia', 'caise']
+    },
+    'zhaozhouqiao': {
+      id: 'zhaozhouqiao',
+      title: '赵州桥',
+      content: '赵州桥又称安济桥，由隋代著名匠师李春设计建造。它是世界上现存年代最久远、跨度最大、保存最完整的单孔坦拱敞肩石拱桥。',
+      type: 'architecture',
+      relatedNodes: ['liangjia', 'wazuo']
+    },
+    'yingxianmuta': {
+      id: 'yingxianmuta',
+      title: '应县木塔',
+      content: '应县木塔全称佛宫寺释迦塔，位于山西省应县。它是世界上现存最高、最古老的纯木结构幕墙式塔式建筑，是中国古建筑的瑰宝。',
+      type: 'architecture',
+      relatedNodes: ['dougong', 'liangjia']
+    },
+    'gugong': {
+      id: 'gugong',
+      title: '北京故宫',
+      content: '北京故宫是中国明清两代的皇家宫殿，旧称紫禁城。它是世界上现存规模最大、保存最为完整的木质结构古建筑之一。',
+      type: 'culture',
+      relatedNodes: ['dougong', 'caise', 'xumizuo']
+    }
+  }
+
+  return nodes[id] || nodes['dougong']
+}
+
+export function getMockNodeTitle(id: string): string {
+  const titles: Record<string, string> = {
+    'dougong': '斗拱',
+    'liangjia': '梁架结构',
+    'wazuo': '瓦作工艺',
+    'caise': '彩画装饰',
+    'crosscultural': '中西对照',
+    'style-comparison': '风格演变',
+    'xumizuo': '须弥座',
+    'zhaozhouqiao': '赵州桥',
+    'yingxianmuta': '应县木塔',
+    'gugong': '北京故宫'
+  }
+  return titles[id] || id
+}

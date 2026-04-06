@@ -39,16 +39,16 @@ const getLevelText = (icon: string): string => {
 </script>
 
 <style>
-.container { flex: 1; padding: 16px; background-color: #F8F5F0; }
+.container { flex: 1; padding: 20px; background-color: #F6EFE9; }
 .grid { flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
-.medal-card { width: 48%; background-color: #FFFFFF; border: 1px solid #E0E0E0; border-radius: 12px; padding: 20px 12px; align-items: center; margin-bottom: 16px; transition: transform 0.2s; }
-.medal-card-hover { transform: scale(0.98); opacity: 0.9; }
-.medal-icon { width: 64px; height: 64px; border-radius: 32px; margin-bottom: 12px; border: 4px solid #F8F5F0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.medal-card { width: 48%; background-color: #FFFFFF; border: 1px solid #C6A664; border-radius: 12px; padding: 20px 12px; align-items: center; margin-bottom: 16px; transition: transform 0.2s; }
+.medal-card-hover { transform: scale(0.98); opacity: 0.9; background-color: #E8DCC8; }
+.medal-icon { width: 64px; height: 64px; border-radius: 32px; margin-bottom: 12px; border: 2px solid #C6A664; box-shadow: 0 2px 8px rgba(74, 46, 27, 0.1); }
 .medal-bronze { background-color: #CD7F32; }
 .medal-silver { background-color: #C0C0C0; }
 .medal-gold { background-color: #FFD700; }
 .medal-diamond { background-color: #B9F2FF; }
-.medal-name { font-size: 16px; font-weight: bold; color: #3D3D3D; margin-bottom: 4px; }
-.medal-level { font-size: 12px; color: #9E9E9E; background-color: rgba(158, 158, 158, 0.1); padding: 2px 6px; border-radius: 4px; margin-bottom: 8px; }
-.medal-desc { font-size: 12px; color: #9E9E9E; text-align: center; }
+.medal-name { font-size: 16px; font-weight: bold; color: #4A2E1B; margin-bottom: 4px; }
+.medal-level { font-size: 12px; color: #8C5A2B; background-color: rgba(198, 166, 100, 0.2); padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; border: 1px solid #C6A664; }
+.medal-desc { font-size: 12px; color: #6D4C41; text-align: center; line-height: 1.4; }
 </style>

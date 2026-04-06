@@ -121,114 +121,125 @@ const quickAsk = (text: string) => {
 <style>
 	.container {
 		flex: 1;
-		background-color: #F8F5F0;
+		background-color: #F6EFE9;
 		display: flex;
 		flex-direction: column;
 	}
 
 	.chat-area {
 		flex: 1;
-		padding: 16px;
+		padding: 20px;
 	}
 
 	.message {
 		max-width: 80%;
-		padding: 12px;
-		border-radius: 8px;
-		margin-bottom: 16px;
+		padding: 12px 16px;
+		border-radius: 12px;
+		margin-bottom: 20px;
     flex-direction: column;
 	}
 
 	.ai-msg {
 		background-color: #FFFFFF;
-		border: 1px solid #E0E0E0;
+		border: 1px solid #C6A664;
 		align-self: flex-start;
+    border-bottom-left-radius: 2px;
 	}
 
 	.user-msg {
-		background-color: #E8F5E9;
-		border: 1px solid #C8E6C9;
+		background-color: #E8DCC8;
+		border: 1px solid #8C5A2B;
 		align-self: flex-end;
+    border-bottom-right-radius: 2px;
 	}
 
 	.msg-text {
-		font-size: 14px;
-		color: #3D3D3D;
+		font-size: 16px;
+		color: #4A2E1B;
+    line-height: 1.6;
 	}
 
   .msg-image {
-    width: 150px;
-    border-radius: 4px;
+    width: 180px;
+    border-radius: 8px;
     margin-bottom: 8px;
+    border: 1px solid #C6A664;
   }
 
 	.action-area {
 		flex-direction: row;
-		padding: 8px 16px;
+		padding: 12px 20px;
 	}
 
 	.action-btn {
-		background-color: #7A5C48;
+		background-color: #4A2E1B;
 		padding: 8px 16px;
 		border-radius: 20px;
-		margin-right: 8px;
+		margin-right: 10px;
+    border: 1px solid #C6A664;
 	}
 
 	.action-text {
-		color: #FFFFFF;
-		font-size: 12px;
+		color: #FFF3E0;
+		font-size: 13px;
+    font-weight: 500;
 	}
 
   .preview-area {
-    padding: 8px 16px;
+    padding: 12px 20px;
     flex-direction: row;
     position: relative;
-    height: 60px;
+    height: 70px;
+    background-color: rgba(232, 220, 200, 0.3);
   }
   .preview-img {
-    width: 50px;
-    height: 50px;
-    border-radius: 4px;
+    width: 54px;
+    height: 54px;
+    border-radius: 6px;
+    border: 1px solid #C6A664;
   }
   .remove-img {
     position: absolute;
-    left: 56px;
-    top: 4px;
-    background-color: rgba(0,0,0,0.5);
-    color: #FFF;
+    left: 62px;
+    top: 6px;
+    background-color: #8C5A2B;
+    color: #FFF3E0;
     font-size: 10px;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     text-align: center;
-    line-height: 16px;
-    border-radius: 8px;
+    line-height: 18px;
+    border-radius: 9px;
   }
 
 	.input-area {
 		flex-direction: row;
-		padding: 12px 16px;
+		padding: 16px 20px;
 		background-color: #FFFFFF;
-		border-top: 1px solid #E0E0E0;
+		border-top: 1px solid #C6A664;
 		align-items: center;
 	}
 
 	.input-box {
 		flex: 1;
-		height: 36px;
-		background-color: #F8F5F0;
-		border-radius: 18px;
+		height: 40px;
+		background-color: #F6EFE9;
+		border-radius: 20px;
 		padding: 0 16px;
-		font-size: 14px;
+		font-size: 15px;
+    border: 1px solid #C6A664;
+    color: #4A2E1B;
 	}
 
 	.send-btn {
-		margin-left: 8px;
-		background-color: #C44536;
-		color: #FFFFFF;
-		font-size: 14px;
-		border-radius: 18px;
-		padding: 0 16px;
-		height: 36px;
-		line-height: 36px;
+		margin-left: 12px;
+		background-color: #8C5A2B;
+		color: #FFF3E0;
+		font-size: 15px;
+		border-radius: 20px;
+		padding: 0 20px;
+		height: 40px;
+		line-height: 40px;
+    border: none;
 	}
 </style>

@@ -1,0 +1,47 @@
+import { ChatMessage } from '../../types/ai.uts'
+
+export function getMockChatHistory(): ChatMessage[] {
+  return [
+    {
+      id: 'm1',
+      role: 'ai',
+      content: '你好！我是你的古建筑研习助手。有什么我可以帮你的吗？'
+    },
+    {
+      id: 'm2',
+      role: 'user',
+      content: '什么是五脊六兽？'
+    },
+    {
+      id: 'm3',
+      role: 'ai',
+      content: '“五脊六兽”是中国古代建筑屋顶上的一种装饰，主要用于等级较高的建筑（如庑殿顶、歇山顶）。“五脊”指一条正脊和四条垂脊；“六兽”则指在每条垂脊端部的六个神兽装饰（虽然通常不止 6 个，但民间习惯统称为六兽）。它们不仅有装饰作用，还能保护木构件不受侵蚀。'
+    },
+    {
+      id: 'm4',
+      role: 'user',
+      content: '故宫太和殿的屋顶是什么等级？'
+    },
+    {
+      id: 'm5',
+      role: 'ai',
+      content: '故宫太和殿的屋顶采用的是“重檐庑殿顶”，这是中国古代建筑中等级最高的一种屋顶形制，只有皇宫主殿或极少数特赐建筑才能使用。'
+    }
+  ]
+}
+
+export function getMockAIResponse(newMessage: string, hasImage: boolean): ChatMessage {
+  let reply = `关于“${newMessage}”，中国古建筑蕴含着深厚的文化底蕴与精湛的工艺，如榫卯结构、斗拱等，展现了古代工匠的智慧。`
+  if (hasImage) {
+    reply = `系统已收到您的图片。经过 AI 视觉分析，这可能是一处典型的明清官式建筑构件（如斗拱/歇山顶），它体现了当时严格的等级制度与高超的木作技艺。`
+  }
+  return {
+    id: 'msg_' + Date.now(),
+    role: 'ai',
+    content: reply
+  } as ChatMessage
+}
+
+export function getMockRecognitionResult(): string {
+  return '识别结果：北京故宫太和殿。其屋顶形制为重檐庑殿顶，面阔十一间，进深五间。'
+}

@@ -1,23 +1,68 @@
 <template>
   <view class="container">
     <view class="graph-area">
-      <text class="graph-text">[ECharts 关系图 / G6 渲染区]</text>
+      <scroll-view 
+        class="graph-scroll" 
+        direction="all" 
+        :show-scrollbar="false"
+        :scroll-top="scrollTop"
+        :scroll-left="scrollLeft"
+      >
+        <view class="graph-content">
+          <!-- Center Node -->
+          <view class="node center-node">
+            <text class="node-title">{{ nodeData.title }}</text>
+          </view>
+          
+          <!-- Related Nodes (Radial) -->
+          <view 
+            v-for="(relId, index) in nodeData.relatedNodes" 
+            :key="relId"
+            class="node related-node"
+            :style="getRadialStyle(index, nodeData.relatedNodes.length)"
+            @click="switchToNode(relId)"
+          >
+            <text class="node-title small">{{ getNodeTitle(relId) }}</text>
+          </view>
+          
+          <!-- Connections (Simplified lines) -->
+          <view 
+            v-for="(_, index) in nodeData.relatedNodes" 
+            :key="'line-' + index"
+            class="connection-line"
+            :style="getLineStyle(index, nodeData.relatedNodes.length)"
+          ></view>
+        </view>
+      </scroll-view>
     </view>
-    <view class="info-panel">
-      <view class="drag-bar"></view>
-      <text class="info-title">节点：{{ nodeData.title }}</text>
-      <text class="info-desc">{{ nodeData.content }}</text>
-    </view>
+    
+    <bottom-drawer :min-height="120" :max-height="450" :initial-height="200">
+      <view class="info-panel">
+        <text class="info-title">节点：{{ nodeData.title }}</text>
+        <scroll-view class="info-scroll" scroll-y="true">
+          <text class="info-desc">{{ nodeData.content }}</text>
+          <view class="related-section" v-if="nodeData.relatedNodes.length > 0">
+            <text class="sub-title">相关节点</text>
+            <view class="related-list">
+              <view class="related-tag" v-for="relId in nodeData.relatedNodes" :key="relId" @click="switchToNode(relId)">
+                <text class="tag-text">{{ getNodeTitle(relId) }}</text>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+    </bottom-drawer>
   </view>
 </template>
 
 <script setup lang="uts">
 import { ref, onMounted } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
-import { fetchKnowledgeNode } from '../../services/knowledge.uts'
+import { fetchKnowledgeNode, getNodeTitle } from '../../services/knowledge.uts'
 import type { KnowledgeNode } from '../../types/knowledge.uts'
+import BottomDrawer from '../../components/BottomDrawer/BottomDrawer.uvue'
 
-const nodeId = ref<string>('k1')
+const nodeId = ref<string>('dougong')
 const nodeData = ref<KnowledgeNode>({
   id: '',
   title: '',
@@ -26,24 +71,159 @@ const nodeData = ref<KnowledgeNode>({
   relatedNodes: []
 } as KnowledgeNode)
 
+const scrollTop = ref(0)
+const scrollLeft = ref(0)
+
 onLoad((options: UTSJSONObject) => {
+  const idOpt = options['id'] as string | null
   const typeOpt = options['type'] as string | null
-  if (typeOpt != null) {
+  if (idOpt != null) {
+    nodeId.value = idOpt
+  } else if (typeOpt != null) {
     nodeId.value = typeOpt
   }
 })
 
 onMounted(async () => {
-  nodeData.value = await fetchKnowledgeNode(nodeId.value)
+  await loadNodeData()
+  // 延迟居中滚动
+  setTimeout(() => {
+    // 假设画布 600x600，视口大约 375x500
+    // 居中计算：(画布宽 - 视口宽) / 2
+    // 这里简单设置一个经验值
+    scrollTop.value = 100
+    scrollLeft.value = 110
+  }, 100)
 })
+
+const loadNodeData = async () => {
+  nodeData.value = await fetchKnowledgeNode(nodeId.value)
+}
+
+const switchToNode = async (id: string) => {
+  nodeId.value = id
+  await loadNodeData()
+}
+
+/**
+ * 计算径向布局样式
+ */
+const getRadialStyle = (index: number, total: number): any => {
+  if (total === 0) return {}
+  const radius = 120
+  const angle = (index * (360 / total)) * (Math.PI / 180)
+  const x = radius * Math.cos(angle)
+  const y = radius * Math.sin(angle)
+  
+  return {
+    'transform': `translate(${x}px, ${y}px)`
+  }
+}
+
+/**
+ * 计算连线样式
+ */
+const getLineStyle = (index: number, total: number): any => {
+  if (total === 0) return { 'display': 'none' }
+  const angle = index * (360 / total)
+  const length = 120
+  
+  return {
+    'transform': `rotate(${angle}deg)`,
+    'width': `${length}px`
+  }
+}
 </script>
 
 <style>
-.container { flex: 1; background-color: #F8F5F0; display: flex; flex-direction: column; }
-.graph-area { flex: 1; align-items: center; justify-content: center; background-color: rgba(158, 158, 158, 0.05); }
-.graph-text { color: #9E9E9E; font-size: 14px; }
-.info-panel { background-color: #FFFFFF; padding: 24px; border-top-left-radius: 16px; border-top-right-radius: 16px; box-shadow: 0 -4px 6px rgba(0,0,0,0.05); }
-.drag-bar { width: 48px; height: 4px; background-color: #E0E0E0; border-radius: 2px; align-self: center; margin-bottom: 16px; }
-.info-title { font-size: 18px; font-weight: bold; color: #3D3D3D; margin-bottom: 12px; }
-.info-desc { font-size: 14px; color: #9E9E9E; line-height: 1.5; }
+.container { flex: 1; background-color: #F6EFE9; display: flex; flex-direction: column; position: relative; min-height: 100%; }
+.graph-area { flex: 1; background-color: #FDFBF7; border-bottom: 1px solid #C6A664; background-image: radial-gradient(circle, #E8DCC8 1px, transparent 1px); background-size: 30px 30px; }
+
+.graph-scroll {
+  width: 100%;
+  height: 100%;
+}
+
+.graph-content {
+  width: 600px;
+  height: 600px;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+}
+
+.node {
+  position: absolute;
+  background-color: #FFFFFF;
+  border: 2px solid #C6A664;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(74, 46, 27, 0.1);
+  left: 50%;
+  top: 50%;
+}
+
+.center-node {
+  width: 100px;
+  height: 100px;
+  margin-left: -50px;
+  margin-top: -50px;
+  background-color: #4A2E1B;
+  border: 3px solid #E8C382;
+  z-index: 20;
+}
+
+.center-node .node-title {
+  color: #FFF3E0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.related-node {
+  width: 80px;
+  height: 80px;
+  margin-left: -40px;
+  margin-top: -40px;
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+.related-node:active {
+  background-color: #E8DCC8;
+  transform: scale(0.95);
+}
+
+.node-title {
+  font-size: 16px;
+  color: #4A2E1B;
+  text-align: center;
+}
+
+.node-title.small {
+  font-size: 14px;
+}
+
+.connection-line {
+  position: absolute;
+  height: 2px;
+  background-color: rgba(198, 166, 100, 0.3);
+  transform-origin: left center;
+  z-index: 5;
+  left: 50%;
+  top: 50%;
+}
+
+.info-panel { height: 100%; display: flex; flex-direction: column; padding-top: 10px; }
+.info-scroll { flex: 1; }
+.info-title { font-size: 22px; font-weight: bold; color: #4A2E1B; margin-bottom: 16px; border-bottom: 1px solid #C6A664; padding-bottom: 8px; }
+.info-desc { font-size: 16px; color: #3E2723; line-height: 1.8; margin-bottom: 20px; }
+
+.sub-title { font-size: 18px; font-weight: bold; color: #4A2E1B; margin-bottom: 12px; }
+.related-list { flex-direction: row; flex-wrap: wrap; }
+.related-tag { background-color: #F6EFE9; border: 1px solid #C6A664; border-radius: 4px; padding: 4px 12px; margin-right: 8px; margin-bottom: 8px; }
+.tag-text { font-size: 14px; color: #8C5A2B; }
 </style>

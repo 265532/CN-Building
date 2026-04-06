@@ -1,0 +1,74 @@
+import { MapMarker, Place } from '../../types/map.uts'
+
+export function getMockMapMarkers(): MapMarker[] {
+  return [
+    {
+      id: 1,
+      latitude: 39.916344,
+      longitude: 116.397128,
+      title: '故宫太和殿',
+      iconPath: '/static/marker.png',
+      width: 40,
+      height: 40,
+      callout: {
+        content: '北京故宫太和殿\n重檐庑殿顶',
+        color: '#ffffff',
+        fontSize: 14,
+        borderRadius: 5,
+        bgColor: '#b4282d',
+        padding: 10,
+        display: 'ALWAYS'
+      },
+      address: '北京市东城区景山前街4号',
+      category: '皇宫'
+    },
+    {
+      id: 2,
+      latitude: 39.229158,
+      longitude: 113.273641,
+      title: '应县木塔',
+      iconPath: '/static/marker.png',
+      width: 40,
+      height: 40,
+      callout: {
+        content: '应县木塔\n世界最高木塔',
+        color: '#ffffff',
+        fontSize: 14,
+        borderRadius: 5,
+        bgColor: '#b4282d',
+        padding: 10,
+        display: 'ALWAYS'
+      },
+      address: '山西省朔州市应县金城礼中街',
+      category: '楼阁'
+    },
+    {
+      id: 3,
+      latitude: 37.848823,
+      longitude: 114.887019,
+      title: '赵州桥',
+      iconPath: '/static/marker.png',
+      width: 40,
+      height: 40,
+      callout: {
+        content: '赵州桥\n隋代大石桥',
+        color: '#ffffff',
+        fontSize: 14,
+        borderRadius: 5,
+        bgColor: '#b4282d',
+        padding: 10,
+        display: 'ALWAYS'
+      },
+      address: '河北省石家庄市赵县大石桥',
+      category: '桥梁'
+    }
+  ]
+}
+
+export function getMockNearbyPlaces(): Place[] {
+  return [
+    { id: 101, name: '午门', distance: '120m', address: '故宫南门', category: '城门' },
+    { id: 102, name: '保和殿', distance: '250m', address: '故宫三大殿之一', category: '宫殿' },
+    { id: 103, name: '御花园', distance: '480m', address: '故宫北端', category: '园林' }
+  ]
+}

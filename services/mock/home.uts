@@ -1,0 +1,33 @@
+import { HomeData } from '../../types/home.uts'
+
+export function getMockHomeData(): HomeData {
+  return {
+    banners: [
+      { id: 'b1', image: 'https://p0.itc.cn/images01/20210811/9e8b1b2f7b1d4e4e9b9b9b9b9b9b9b9b.jpeg', title: '故宫全景导览', url: '/pages/topic/detail?id=palace' },
+      { id: 'b2', image: 'https://p1.itc.cn/images01/20210811/7e8b1b2f7b1d4e4e9b9b9b9b9b9b9b9b.jpeg', title: '应县木塔结构解析', url: '/pages/topic/detail?id=residential' },
+      { id: 'b3', image: 'https://p2.itc.cn/images01/20210811/5e8b1b2f7b1d4e4e9b9b9b9b9b9b9b9b.jpeg', title: '古建营造技法课程', url: '/pages/topic/detail?id=official' }
+    ],
+    topics: [
+      { id: 'palace', name: '皇宫专题', url: '/pages/topic/detail?id=palace' },
+      { id: 'residential', name: '民居专题', url: '/pages/topic/detail?id=residential' },
+      { id: 'official', name: '官府专题', url: '/pages/topic/detail?id=official' },
+      { id: 'garden', name: '园林专题', url: '/pages/topic/detail?id=garden' }
+    ],
+    crossCulturalList: [
+      {
+        id: 'c1',
+        tag: '结构对比',
+        title: '中国斗拱 vs 古希腊柱式',
+        description: '探索东西方古代建筑支撑体系的异同。',
+        url: '/pages/knowledge/detail?id=crosscultural'
+      },
+      {
+        id: 'c2',
+        tag: '风格演变',
+        title: '飞檐与哥特尖顶',
+        description: '比较中式飞檐的柔美与西式哥特尖顶的峻拔。',
+        url: '/pages/knowledge/detail?id=style-comparison'
+      }
+    ]
+  } as HomeData
+}

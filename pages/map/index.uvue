@@ -25,18 +25,23 @@
       @callouttap="onCalloutTap"
     ></map>
     
-    <view class="search-panel">
-      <input class="search-input" placeholder="搜索附近古建筑" />
-      <scroll-view class="nearby-list" scroll-y="true">
-        <view class="place-item" v-for="place in places" :key="place.id">
-          <view class="place-info">
-            <text class="place-name">{{ place.name }}</text>
-            <text class="place-dist">距离 {{ place.distance }}</text>
-          </view>
-          <text class="route-btn" @click="planRoute(place)">路线</text>
+    <bottom-drawer :min-height="150" :max-height="600" :initial-height="250">
+      <view class="search-panel">
+        <view class="search-bar">
+          <input class="search-input" placeholder="搜索附近古建筑" />
         </view>
-      </scroll-view>
-    </view>
+        <text class="panel-title">附近古建筑</text>
+        <scroll-view class="nearby-list" scroll-y="true">
+          <view class="place-item" v-for="place in places" :key="place.id">
+            <view class="place-info">
+              <text class="place-name">{{ place.name }}</text>
+              <text class="place-dist">距离 {{ place.distance }}</text>
+            </view>
+            <text class="route-btn" @click="planRoute(place)">路线</text>
+          </view>
+        </scroll-view>
+      </view>
+    </bottom-drawer>
   </view>
 </template>
 
@@ -44,6 +49,7 @@
 import { ref, onMounted } from 'vue'
 import { fetchMapMarkers, fetchNearbyPlaces } from '../../services/map.uts'
 import type { MapMarker, Place } from '../../types/map.uts'
+import BottomDrawer from '../../components/BottomDrawer/BottomDrawer.uvue'
 
 const categories = [
   { label: '全部', value: 'all' },
@@ -132,7 +138,7 @@ const planRoute = (place: Place) => {
 </script>
 
 <style>
-.container { flex: 1; flex-direction: column; background-color: #F8F5F0; }
+.container { flex: 1; flex-direction: column; background-color: #F6EFE9; position: relative; }
 
 .category-scroll {
   height: 48px;
@@ -159,12 +165,14 @@ const planRoute = (place: Place) => {
 }
 
 .map-view { flex: 1; width: 100%; }
-.search-panel { position: absolute; bottom: 0; left: 0; right: 0; background-color: #FFFFFF; padding: 16px; border-top-left-radius: 16px; border-top-right-radius: 16px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
-.search-input { height: 40px; background-color: #F8F5F0; border-radius: 8px; padding: 0 12px; font-size: 14px; margin-bottom: 16px; }
-.nearby-list { flex-direction: column; }
-.place-item { flex-direction: row; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #E0E0E0; }
+.search-panel { height: 100%; display: flex; flex-direction: column; }
+.search-bar { margin-bottom: 16px; }
+.search-input { height: 44px; background-color: #F6EFE9; border-radius: 22px; padding: 0 20px; font-size: 14px; border: 1px solid #C6A664; }
+.panel-title { font-size: 18px; font-weight: bold; color: #4A2E1B; margin-bottom: 12px; }
+.nearby-list { flex: 1; }
+.place-item { flex-direction: row; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #E8DCC8; }
 .place-info { flex-direction: column; flex: 1; }
-.place-name { font-size: 16px; color: #3D3D3D; font-weight: bold; margin-bottom: 4px; }
-.place-dist { font-size: 14px; color: #9E9E9E; }
-.route-btn { background-color: #7A5C48; color: #FFFFFF; font-size: 14px; padding: 6px 16px; border-radius: 16px; }
+.place-name { font-size: 16px; color: #4A2E1B; font-weight: bold; margin-bottom: 4px; }
+.place-dist { font-size: 14px; color: #8C5A2B; }
+.route-btn { background-color: #4A2E1B; color: #FFF3E0; font-size: 14px; padding: 6px 20px; border-radius: 20px; border: 1px solid #C6A664; }
 </style>

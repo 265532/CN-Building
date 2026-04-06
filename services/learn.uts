@@ -1,59 +1,11 @@
 import type { LearnData } from '../types/learn.uts'
+import { request } from '../utils/request.uts'
 
-export function fetchLearnData(): Promise<LearnData> {
-  return new Promise((resolve) => {
-    uni.request({
-      url: 'https://api.example.com/v1/learn/paths',
-      method: 'GET',
-      success: (res) => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(res.data as LearnData)
-        } else {
-          resolve(getMockLearnData())
-        }
-      },
-      fail: () => {
-        resolve(getMockLearnData())
-      }
-    })
+/**
+ * 获取学习路径数据
+ */
+export async function fetchLearnData(): Promise<LearnData> {
+  return request<LearnData>({
+    url: '/api/learn/data'
   })
-}
-
-function getMockLearnData(): LearnData {
-  return {
-    headerTitle: '知识图谱学习',
-    headerSubtitle: '构建系统化的古建筑知识网络',
-    paths: [
-      {
-        id: 'p1',
-        title: '建筑知识网络',
-        desc: '民居 → 官府 → 皇宫等级关联',
-        url: '/pages/knowledge/detail?type=network'
-      },
-      {
-        id: 'p2',
-        title: '时空图谱',
-        desc: '明清皇宫分布，宋代桥梁分布',
-        url: '/pages/knowledge/detail?type=spatiotemporal'
-      },
-      {
-        id: 'p3',
-        title: '技术演化图谱',
-        desc: '榫卯结构发展，拱券技术对比',
-        url: '/pages/knowledge/detail?type=evolution'
-      },
-      {
-        id: 'p4',
-        title: '跨文化对照系统',
-        desc: '中西对比、符号解析、时间轴对照',
-        url: '/pages/knowledge/detail?type=crosscultural'
-      },
-      {
-        id: 'p5',
-        title: '游戏式沉浸学习',
-        desc: '建筑拼图、建筑消消乐、扫雷',
-        url: '/pages/game/index'
-      }
-    ]
-  } as LearnData
 }

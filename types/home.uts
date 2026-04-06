@@ -12,7 +12,15 @@ export type CrossCulturalItem = {
   url: string
 }
 
+export type Banner = {
+  id: string
+  image: string
+  title: string
+  url: string
+}
+
 export type HomeData = {
+  banners: Banner[]
   topics: TopicPath[]
   crossCulturalList: CrossCulturalItem[]
 }

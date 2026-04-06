@@ -1,0 +1,78 @@
+import { getMockHomeData } from '../services/mock/home.uts'
+import { getMockKnowledgeNode } from '../services/mock/knowledge.uts'
+import { getMockUserInfo } from '../services/mock/user.uts'
+import { getMockChatHistory, getMockRecognitionResult, getMockAIResponse } from '../services/mock/ai.uts'
+import { getMockMapMarkers, getMockNearbyPlaces } from '../services/mock/map.uts'
+import { getMockLearnData } from '../services/mock/learn.uts'
+import { getMockAchievements } from '../services/mock/achievement.uts'
+
+/**
+ * 根据 URL 分发到对应的 Mock 数据处理器
+ */
+export function getMockDataByUrl(url: string, data: any | null): any {
+  if (url.includes('/api/auth/wechat-login') || url.includes('/api/auth/register') || url.includes('/api/auth/account-login')) {
+    return {
+      token: 'mock_token_' + Date.now()
+    }
+  }
+
+  if (url.includes('/api/auth/send-sms')) {
+    return true
+  }
+
+  if (url.includes('/api/home')) {
+    return getMockHomeData()
+  }
+  
+  if (url.includes('/api/knowledge/node')) {
+    // 简单从 URL 或 data 中提取 id
+    let id = ''
+    if (data != null && data instanceof Map) {
+      id = (data as Map<string, any>).get('id') as string
+    } else if (url.includes('?id=')) {
+      id = url.split('?id=')[1]
+    }
+    return getMockKnowledgeNode(id)
+  }
+  
+  if (url.includes('/api/user/profile')) {
+    return getMockUserInfo()
+  }
+  
+  if (url.includes('/api/ai/chat/history')) {
+    return getMockChatHistory()
+  }
+  
+  if (url.includes('/api/ai/chat/send')) {
+    let newMessage = ''
+    let hasImage = false
+    if (data != null && data instanceof Map) {
+      const dataMap = data as Map<string, any>
+      newMessage = dataMap.get('newMessage') as string || ''
+      hasImage = dataMap.get('imageUrl') != null
+    }
+    return getMockAIResponse(newMessage, hasImage)
+  }
+  
+  if (url.includes('/api/ai/recognition')) {
+    return getMockRecognitionResult()
+  }
+  
+  if (url.includes('/api/map/markers')) {
+    return getMockMapMarkers()
+  }
+  
+  if (url.includes('/api/map/nearby')) {
+    return getMockNearbyPlaces()
+  }
+  
+  if (url.includes('/api/learn/data')) {
+    return getMockLearnData()
+  }
+  
+  if (url.includes('/api/achievement/list')) {
+    return getMockAchievements()
+  }
+  
+  return null
+}

@@ -106,7 +106,7 @@ const handleWechatLogin = (e: any) => {
 <style>
 .container {
   flex: 1;
-  background-color: #F8F5F0;
+  background-color: #F6EFE9;
   padding: 32px 24px;
 }
 
@@ -116,22 +116,25 @@ const handleWechatLogin = (e: any) => {
 }
 
 .title {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: bold;
-  color: #3D3D3D;
-  margin-bottom: 8px;
+  color: #4A2E1B;
+  margin-bottom: 12px;
+  letter-spacing: 2px;
 }
 
 .subtitle {
   font-size: 20px;
-  color: #7A5C48;
+  color: #8C5A2B;
+  font-weight: 500;
 }
 
 .form-container {
   background-color: #FFFFFF;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border-radius: 16px;
+  padding: 30px 24px;
+  border: 1px solid #C6A664;
+  box-shadow: 0 4px 12px rgba(74, 46, 27, 0.08);
 }
 
 .input-group {
@@ -139,43 +142,50 @@ const handleWechatLogin = (e: any) => {
 }
 
 .label {
-  font-size: 14px;
-  color: #3D3D3D;
-  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: bold;
+  color: #4A2E1B;
+  margin-bottom: 10px;
 }
 
 .input {
-  height: 44px;
-  background-color: #F8F5F0;
-  border-radius: 8px;
+  height: 48px;
+  background-color: #F6EFE9;
+  border-radius: 12px;
   padding: 0 16px;
   font-size: 16px;
+  border: 1px solid #C6A664;
+  color: #4A2E1B;
 }
 
 .login-btn-custom {
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 .action-links {
-  margin-top: 16px;
+  margin-top: 20px;
   align-items: center;
 }
 
 .link-text {
   font-size: 14px;
-  color: #7A5C48;
+  color: #8C5A2B;
   text-decoration: underline;
+  font-weight: 500;
 }
 
 .wechat-login {
-  margin-top: 24px;
+  margin-top: 30px;
   align-items: center;
+  border-top: 1px solid #E8DCC8;
+  padding-top: 20px;
 }
 
 .wechat-btn {
   background-color: transparent;
-  font-size: 14px;
-  color: #09BB07;
+  font-size: 15px;
+  color: #248A22;
+  font-weight: 500;
   text-decoration: underline;
   border: none;
 }

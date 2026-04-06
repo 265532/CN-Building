@@ -1,45 +1,19 @@
 import type { KnowledgeNode } from '../types/knowledge.uts'
+import { request } from '../utils/request.uts'
+import { getMockNodeTitle as getMockTitle } from './mock/knowledge.uts'
 
-export function fetchKnowledgeNode(id: string): Promise<KnowledgeNode> {
-  return new Promise((resolve) => {
-    // 预留真实 API 调用
-    uni.request({
-      url: `https://api.example.com/v1/knowledge/node/${id}`,
-      method: 'GET',
-      success: (res) => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(res.data as KnowledgeNode)
-        } else {
-          resolve(getMockKnowledgeNode(id))
-        }
-      },
-      fail: () => {
-        resolve(getMockKnowledgeNode(id))
-      }
-    })
+/**
+ * 获取知识节点详情
+ */
+export async function fetchKnowledgeNode(id: string): Promise<KnowledgeNode> {
+  return request<KnowledgeNode>({
+    url: `/api/knowledge/node?id=${id}`
   })
 }
 
-function getMockKnowledgeNode(id: string): KnowledgeNode {
-  let title = '斗拱'
-  let content = '斗拱是中国古代建筑特有的一种结构。在立柱和横梁交接处，从柱顶上加的一层层探出成弓形的承重结构叫拱，拱与拱之间垫的方形木块叫斗。'
-  let type = 'architecture'
-
-  if (id === 'crosscultural') {
-    title = '中西建筑符号跨文化对照'
-    content = '东方木结构建筑体系强调“天人合一”与横向延伸（如故宫），西方石结构建筑体系强调“神权至上”与垂直伸展（如哥特式教堂）。两者在材料、空间布局和哲学思想上存在显著差异。'
-    type = 'culture'
-  } else if (id === 'network') {
-    title = '古建筑等级网络'
-    content = '中国古建筑在屋顶形制、色彩、面阔间数等方面有着严格的等级制度。从民居（硬山顶、灰瓦）到官府（歇山顶），再到皇宫（重檐庑殿顶、黄琉璃瓦），形成了一套严密的规制网络。'
-    type = 'network'
-  }
-
-  return {
-    id: id || 'k1',
-    title,
-    content,
-    type,
-    relatedNodes: ['k2', 'k3']
-  } as KnowledgeNode
+/**
+ * 获取节点标题 (用于列表展示)
+ */
+export function getNodeTitle(id: string): string {
+  return getMockTitle(id)
 }

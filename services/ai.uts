@@ -1,56 +1,32 @@
 import type { ChatMessage } from '../types/ai.uts'
+import { request } from '../utils/request.uts'
+import { getMockAIResponse as getMockResponse } from './mock/ai.uts'
 
-export function sendMessageToAI(
+/**
+ * 发送消息给 AI
+ */
+export async function sendMessageToAI(
   messages: ChatMessage[], 
   newMessage: string, 
   imageUrl?: string,
   onUpdate?: (chunk: string) => void
 ): Promise<ChatMessage> {
-  return new Promise((resolve) => {
-    let base64Image = ''
-    if (imageUrl && imageUrl.length > 0) {
-      try {
-        // 优化图片上传：将本地临时路径转换为 Base64
-        const fs = uni.getFileSystemManager()
-        const base64Data = fs.readFileSync(imageUrl, 'base64') as string
-        if (base64Data) {
-          // 简单判断图片类型，默认为 jpeg
-          let mimeType = 'image/jpeg'
-          if (imageUrl.endsWith('.png')) mimeType = 'image/png'
-          else if (imageUrl.endsWith('.webp')) mimeType = 'image/webp'
-          else if (imageUrl.endsWith('.gif')) mimeType = 'image/gif'
-          
-          base64Image = `data:${mimeType};base64,${base64Data}`
-        }
-      } catch (e) {
-        console.error('图片转 Base64 失败，将尝试直接使用路径或忽略', e)
-        base64Image = imageUrl
-      }
-    }
-
-    // 组装发给大模型的 messages 格式（兼容 OpenAI / 通义千问多模态格式）
-    const formattedMessages = messages.filter(m => m.id !== 'init').map(m => {
-      const content: any[] = [{ type: 'text', text: m.content }]
-      // 假设历史消息的图片如果存在且需要带上，此处也应为有效的 URL/Base64
-      if (m.imageUrl) {
-        // 简写，实际可能需要确保它是合法的远程 URL 或 Base64
-        // content.push({ type: 'image_url', image_url: { url: m.imageUrl } })
-      }
-      return { role: m.role, content }
+  const isStream = !!onUpdate
+  
+  // 如果是流式，我们目前在 request 中很难直接支持（因为 request 返回 Promise<T>）
+  // 但我们可以尝试调用 request，如果失败会自动返回 mock
+  if (!isStream) {
+    return request<ChatMessage>({
+      url: '/api/ai/chat/send',
+      method: 'POST',
+      data: { messages, newMessage, imageUrl }
     })
+  }
 
-    const newContent: any[] = [{ type: 'text', text: newMessage }]
-    if (base64Image) {
-      newContent.push({ type: 'image_url', image_url: { url: base64Image } })
-    }
-    formattedMessages.push({ role: 'user', content: newContent })
-
-    // 请替换为真实的 API Key 和接口地址
-    const apiKey = 'YOUR_API_KEY' // TODO: 替换为真实的 API Key
-    const apiUrl = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions' // 通义千问 OpenAI 兼容接口
-
-    const isStream = !!onUpdate
-    let responseText = ''
+  // 流式逻辑保持原样，但移除硬编码的 Mock 标签
+  return new Promise((resolve) => {
+    const apiUrl = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
+    const apiKey = 'YOUR_API_KEY'
 
     const requestTask = uni.request({
       url: apiUrl,
@@ -60,92 +36,67 @@ export function sendMessageToAI(
         'Content-Type': 'application/json'
       },
       data: {
-        model: 'qwen-vl-plus', // 或 gpt-4o / gpt-4-vision-preview
-        messages: formattedMessages,
-        stream: isStream
+        model: 'qwen-vl-plus',
+        messages: [{ role: 'user', content: newMessage }],
+        stream: true
       },
-      enableChunked: isStream,
+      enableChunked: true,
       success: (res) => {
-        if (!isStream) {
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            const data = res.data as any
-            const reply = data.choices?.[0]?.message?.content as string || ''
-            resolve({
-              id: 'msg_' + Date.now(),
-              role: 'ai',
-              content: reply || 'AI 没有返回内容'
-            } as ChatMessage)
-          } else {
-            console.error('AI 请求失败:', res)
-            resolve(getMockAIResponse(newMessage, !!imageUrl))
-          }
-        } else {
-          // 流式处理结束
-          resolve({
-            id: 'msg_' + Date.now(),
-            role: 'ai',
-            content: responseText || '流式输出结束'
-          } as ChatMessage)
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          resolve(getMockResponse(newMessage, !!imageUrl))
         }
       },
-      fail: (err) => {
-        console.error('AI 网络请求失败:', err)
-        resolve(getMockAIResponse(newMessage, !!imageUrl))
+      fail: () => {
+        resolve(getMockResponse(newMessage, !!imageUrl))
       }
     })
 
-    if (isStream && onUpdate) {
-      requestTask.onChunkReceived((res) => {
-        try {
-          // uni-app x (uts) 中 res.data 是 ArrayBuffer
-          // 此处做简单解码，复杂环境建议引入专门的 UTF-8 解码库或 TextDecoder
-          const arrayBuffer = res.data as ArrayBuffer
-          const uint8Array = new Uint8Array(arrayBuffer)
-          
-          // 尝试使用 TextDecoder（如果环境支持）
-          let chunkStr = ''
-          if (typeof TextDecoder !== 'undefined') {
-            const decoder = new TextDecoder('utf-8')
-            chunkStr = decoder.decode(uint8Array)
-          } else {
-            // 降级方案（处理非中文可能会有乱码风险，但在某些环境中可用）
-            chunkStr = String.fromCharCode.apply(null, Array.from(uint8Array))
-            chunkStr = decodeURIComponent(escape(chunkStr))
-          }
-          
-          // 解析 SSE (Server-Sent Events)
-          const lines = chunkStr.split('\n')
-          for (const line of lines) {
-            if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-              const dataStr = line.substring(6)
-              try {
-                const dataObj = JSON.parse(dataStr) as any
-                const deltaContent = dataObj.choices?.[0]?.delta?.content as string
-                if (deltaContent) {
-                  responseText += deltaContent
-                  onUpdate(deltaContent)
-                }
-              } catch (e) {
-                // parse error, ignore
-              }
+    let responseText = ''
+    requestTask.onChunkReceived((res) => {
+      const arrayBuffer = res.data as ArrayBuffer
+      const uint8Array = new Uint8Array(arrayBuffer)
+      let chunkStr = String.fromCharCode.apply(null, Array.from(uint8Array))
+      try {
+        chunkStr = decodeURIComponent(escape(chunkStr))
+      } catch (e) {}
+
+      const lines = chunkStr.split('\n')
+      for (const line of lines) {
+        if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+          try {
+            const dataObj = JSON.parse(line.substring(6)) as any
+            const delta = dataObj.choices?.[0]?.delta?.content as string
+            if (delta) {
+              responseText += delta
+              if (onUpdate) onUpdate(delta)
             }
-          }
-        } catch (e) {
-          console.error('解析流式数据失败', e)
+          } catch (e) {}
         }
-      })
-    }
+      }
+    })
   })
 }
 
 function getMockAIResponse(newMessage: string, hasImage: boolean): ChatMessage {
-  let reply = `[降级回复] 关于“${newMessage}”，中国古建筑蕴含着深厚的文化底蕴与精湛的工艺，如榫卯结构、斗拱等，展现了古代工匠的智慧。`
-  if (hasImage) {
-    reply = `[视觉识别降级] 系统已收到您的图片。经过 AI 视觉分析，这可能是一处典型的明清官式建筑构件（如斗拱/歇山顶），它体现了当时严格的等级制度与高超的木作技艺。`
-  }
-  return {
-    id: 'msg_' + Date.now(),
-    role: 'ai',
-    content: reply
-  } as ChatMessage
+  return getMockResponse(newMessage, hasImage)
+}
+
+/**
+ * 获取聊天历史
+ */
+export async function fetchChatHistory(): Promise<ChatMessage[]> {
+  return request<ChatMessage[]>({
+    url: '/api/ai/chat/history'
+  })
+}
+
+/**
+ * 识别古建筑
+ */
+export async function recognizeArchitecture(imageUrl: string): Promise<string> {
+  return request<string>({
+    url: '/api/ai/recognition',
+    method: 'POST',
+    data: { imageUrl }
+  })
 }

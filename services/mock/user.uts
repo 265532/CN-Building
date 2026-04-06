@@ -1,0 +1,29 @@
+import { UserInfo } from '../../types/user.uts'
+
+export function getMockUserInfo(): UserInfo {
+  return {
+    id: 'u001',
+    username: '古建研习生',
+    level: 'Lv3 梁架',
+    studyDays: 28,
+    medals: [
+      { id: 'm1', name: '三宅同辉', type: 'bronze' },
+      { id: 'm2', name: '九章规制', type: 'silver' },
+      { id: 'm3', name: '紫宸经纬', type: 'gold' },
+      { id: 'm4', name: '飞虹贯宇', type: 'gold' },
+      { id: 'm5', name: '古建守护者', type: 'silver' }
+    ],
+    recentRecords: [
+      { id: 'r1', title: 'VR参观故宫', date: '今天', duration: '42分钟' },
+      { id: 'r2', title: '应县木塔3D解剖', date: '昨天', duration: '25分钟' },
+      { id: 'r3', title: '赵州桥AI动画解析', date: '3天前', duration: '18分钟' }
+    ],
+    knowledgeRadar: [
+      { name: '木作结构', value: 92 },
+      { name: '砖瓦工艺', value: 75 },
+      { name: '彩画装饰', value: 68 },
+      { name: '空间布局', value: 85 },
+      { name: '历史文化', value: 80 }
+    ]
+  } as UserInfo
+}

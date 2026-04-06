@@ -1,141 +1,22 @@
 import type { MapMarker, Place } from '../types/map.uts'
+import { request } from '../utils/request.uts'
 
-export function fetchMapMarkers(latitude: number, longitude: number, category: string = 'all'): Promise<MapMarker[]> {
-  return new Promise((resolve) => {
-    // 预留真实 API 调用
-    uni.request({
-      url: 'https://api.example.com/v1/map/markers',
-      method: 'GET',
-      data: { lat: latitude, lng: longitude, category },
-      success: (res) => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(res.data as MapMarker[])
-        } else {
-          // 降级处理：使用 Mock 数据
-          resolve(getMockMarkers(latitude, longitude, category))
-        }
-      },
-      fail: () => {
-        // 降级处理：网络请求失败时使用 Mock 数据
-        resolve(getMockMarkers(latitude, longitude, category))
-      }
-    })
+/**
+ * 获取地图标记点
+ */
+export async function fetchMapMarkers(latitude: number, longitude: number, category: string = 'all'): Promise<MapMarker[]> {
+  return request<MapMarker[]>({
+    url: '/api/map/markers',
+    data: { lat: latitude, lng: longitude, category }
   })
 }
 
-const allPlaces = [
-  {
-    id: 1,
-    name: '故宫博物院',
-    latitude: 39.916345,
-    longitude: 116.397155,
-    category: 'huanggong',
-    address: '北京市东城区景山前街4号',
-    distance: '0.5km'
-  },
-  {
-    id: 2,
-    name: '天坛公园',
-    latitude: 39.882218,
-    longitude: 116.406605,
-    category: 'yuanlin',
-    address: '北京市东城区天坛东里甲1号',
-    distance: '4.2km'
-  },
-  {
-    id: 3,
-    name: '恭王府',
-    latitude: 39.937213,
-    longitude: 116.386927,
-    category: 'guanfu',
-    address: '北京市西城区前海西街17号',
-    distance: '2.8km'
-  },
-  {
-    id: 4,
-    name: '四合院民居',
-    latitude: 39.934444,
-    longitude: 116.401111,
-    category: 'minju',
-    address: '北京市东城区南锣鼓巷',
-    distance: '1.5km'
-  },
-  {
-    id: 5,
-    name: '颐和园',
-    latitude: 39.999905,
-    longitude: 116.275485,
-    category: 'yuanlin',
-    address: '北京市海淀区新建宫门路19号',
-    distance: '15.0km'
-  }
-]
-
-function getMockMarkers(lat: number, lng: number, category: string): MapMarker[] {
-  let filtered = allPlaces
-  if (category !== 'all') {
-    filtered = allPlaces.filter(p => p.category === category)
-  }
-  
-  return filtered.map(p => {
-    return {
-      id: p.id,
-      latitude: p.latitude,
-      longitude: p.longitude,
-      title: p.name,
-      iconPath: '/static/marker.png',
-      width: 32,
-      height: 32,
-      address: p.address,
-      category: p.category,
-      callout: {
-        content: p.name,
-        color: '#FFFFFF',
-        fontSize: 14,
-        borderRadius: 8,
-        bgColor: '#7A5C48',
-        padding: 8,
-        display: 'BYCLICK'
-      }
-    } as MapMarker
-  })
-}
-
-export function fetchNearbyPlaces(latitude: number, longitude: number, category: string = 'all'): Promise<Place[]> {
-  return new Promise((resolve) => {
-    // 预留真实 API 调用
-    uni.request({
-      url: 'https://api.example.com/v1/map/places',
-      method: 'GET',
-      data: { lat: latitude, lng: longitude, category },
-      success: (res) => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(res.data as Place[])
-        } else {
-          // 降级处理：使用 Mock 数据
-          resolve(getMockPlaces(category))
-        }
-      },
-      fail: () => {
-        // 降级处理：网络请求失败时使用 Mock 数据
-        resolve(getMockPlaces(category))
-      }
-    })
-  })
-}
-
-function getMockPlaces(category: string): Place[] {
-  let filtered = allPlaces
-  if (category !== 'all') {
-    filtered = allPlaces.filter(p => p.category === category)
-  }
-  return filtered.map(p => {
-    return {
-      id: p.id,
-      name: p.name,
-      distance: p.distance,
-      address: p.address,
-      category: p.category
-    } as Place
+/**
+ * 获取周边推荐景点
+ */
+export async function fetchNearbyPlaces(latitude: number, longitude: number, category: string = 'all'): Promise<Place[]> {
+  return request<Place[]>({
+    url: '/api/map/nearby',
+    data: { lat: latitude, lng: longitude, category }
   })
 }

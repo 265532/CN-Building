@@ -1,10 +1,12 @@
 import { userStore, logout } from '../store/user.uts'
+import { getMockDataByUrl } from './mockDispatcher.uts'
 
-type RequestOptions = {
+export type RequestOptions = {
   url: string
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   data?: any
   header?: any
+  useMockOnFailure?: boolean
 }
 
 export function request<T>(options: RequestOptions): Promise<T> {
@@ -32,12 +34,30 @@ export function request<T>(options: RequestOptions): Promise<T> {
           reject(new Error('Unauthorized'))
         } else if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data as T)
+        } else if (options.useMockOnFailure !== false) {
+          // 触发降级
+          const mockData = getMockDataByUrl(options.url, options.data)
+          if (mockData !== null) {
+            resolve(mockData as T)
+          } else {
+            reject(new Error(`Server error: ${res.statusCode} (No mock data)`))
+          }
         } else {
           reject(new Error(`Server error: ${res.statusCode}`))
         }
       },
-      fail: (err) => {
-        reject(err)
+      fail: (_) => {
+        if (options.useMockOnFailure !== false) {
+          // 触发网络故障降级
+          const mockData = getMockDataByUrl(options.url, options.data)
+          if (mockData !== null) {
+            resolve(mockData as T)
+          } else {
+            reject(new Error('Network failure (No mock data)'))
+          }
+        } else {
+          reject(new Error('Network failure'))
+        }
       }
     })
   })

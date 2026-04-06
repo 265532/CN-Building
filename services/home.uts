@@ -1,24 +1,11 @@
 import { HomeData } from '../types/home.uts'
+import { request } from '../utils/request.uts'
 
-export function fetchHomeData(): Promise<HomeData> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        topics: [
-          { id: 'residential', name: '民居专题', url: '/pages/topic/detail?id=residential' },
-          { id: 'official', name: '官府专题', url: '/pages/topic/detail?id=official' },
-          { id: 'palace', name: '皇宫专题', url: '/pages/topic/detail?id=palace' }
-        ],
-        crossCulturalList: [
-          {
-            id: 'c1',
-            tag: '结构对比',
-            title: '中国斗拱 vs 古希腊柱式',
-            description: '探索东西方古代建筑支撑体系的异同。',
-            url: '/pages/knowledge/detail'
-          }
-        ]
-      } as HomeData)
-    }, 500)
+/**
+ * 获取首页数据
+ */
+export async function fetchHomeData(): Promise<HomeData> {
+  return request<HomeData>({
+    url: '/api/home'
   })
 }

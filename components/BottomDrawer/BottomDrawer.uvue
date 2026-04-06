@@ -1,0 +1,117 @@
+<template>
+  <view 
+    class="drawer-container" 
+    :style="{ height: currentHeight + 'px', transform: 'translateY(' + translateY + 'px)' }"
+    @touchstart="onTouchStart"
+    @touchmove="onTouchMove"
+    @touchend="onTouchEnd"
+  >
+    <view class="drawer-header">
+      <view class="drag-bar"></view>
+    </view>
+    <view class="drawer-content">
+      <slot></slot>
+    </view>
+  </view>
+</template>
+
+<script setup lang="uts">
+import { ref, onMounted } from 'vue'
+
+const props = defineProps({
+  minHeight: {
+    type: Number,
+    default: 100
+  },
+  maxHeight: {
+    type: Number,
+    default: 500
+  },
+  initialHeight: {
+    type: Number,
+    default: 200
+  }
+})
+
+const currentHeight = ref(props.initialHeight)
+const translateY = ref(0)
+let startY = 0
+let lastY = 0
+
+const onTouchStart = (e: TouchEvent) => {
+  startY = e.touches[0].clientY
+  lastY = startY
+}
+
+const onTouchMove = (e: TouchEvent) => {
+  const clientY = e.touches[0].clientY
+  const deltaY = clientY - lastY
+  
+  // 向上滑减少 translateY (相当于增加高度)
+  // 向下滑增加 translateY (相当于减少高度)
+  const nextHeight = currentHeight.value - deltaY
+  
+  if (nextHeight >= props.minHeight && nextHeight <= props.maxHeight) {
+    currentHeight.value = nextHeight
+  }
+  
+  lastY = clientY
+}
+
+const onTouchEnd = () => {
+  // 可以在这里实现自动吸附到 min/max/initial 的逻辑
+  const mid = (props.minHeight + props.maxHeight) / 2
+  if (currentHeight.value > mid) {
+    currentHeight.value = props.maxHeight
+  } else {
+    currentHeight.value = props.minHeight
+  }
+}
+
+onMounted(() => {
+  currentHeight.value = props.initialHeight
+})
+
+defineExpose({
+  expand: () => { currentHeight.value = props.maxHeight },
+  collapse: () => { currentHeight.value = props.minHeight }
+})
+</script>
+
+<style scoped>
+.drawer-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #FFFFFF;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  border-top: 2px solid #C6A664; /* 符合古风风格的金色顶边 */
+}
+
+.drawer-header {
+  height: 30px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drag-bar {
+  width: 40px;
+  height: 4px;
+  background-color: #D2B48C;
+  border-radius: 2px;
+}
+
+.drawer-content {
+  flex: 1;
+  padding: 0 20px 20px 20px;
+  overflow: hidden;
+}
+</style>

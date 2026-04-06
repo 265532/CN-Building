@@ -86,15 +86,16 @@ const uploadPhoto = (photoPath: string) => {
 }
 .bottom-panel {
   flex: 1;
-  background-color: #1A1A1A;
-  padding: 24px 16px;
+  background-color: #4A2E1B;
+  padding: 30px 20px;
   flex-direction: column;
+  border-top: 2px solid #C6A664;
 }
 .controls {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 30px;
 }
 .icon-btn {
   width: 60px;
@@ -102,46 +103,51 @@ const uploadPhoto = (photoPath: string) => {
   justify-content: center;
 }
 .btn-text {
-  color: #FFFFFF;
+  color: #FFF3E0;
   font-size: 16px;
+  font-weight: 500;
 }
 .placeholder {
   width: 60px;
 }
 .capture-btn {
-  width: 72px;
-  height: 72px;
-  border-radius: 36px;
-  background-color: rgba(255, 255, 255, 0.3);
+  width: 80px;
+  height: 80px;
+  border-radius: 40px;
+  background-color: rgba(198, 166, 100, 0.3);
   justify-content: center;
   align-items: center;
+  border: 2px solid #C6A664;
 }
 .capture-inner {
-  width: 56px;
-  height: 56px;
-  border-radius: 28px;
-  background-color: #FFFFFF;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background-color: #C6A664;
+  box-shadow: 0 0 15px rgba(198, 166, 100, 0.5);
 }
 .photo-preview-area {
   flex: 1;
   flex-direction: column;
 }
 .section-title {
-  color: #9E9E9E;
-  font-size: 12px;
-  margin-bottom: 12px;
+  color: #E8DCC8;
+  font-size: 13px;
+  margin-bottom: 16px;
+  font-weight: 500;
 }
 .photo-list {
-  height: 80px;
+  height: 90px;
 }
 .photo-list-inner {
   flex-direction: row;
-  height: 80px;
+  height: 90px;
 }
 .photo-item {
-  width: 80px;
-  height: 80px;
-  border-radius: 8px;
-  margin-right: 12px;
+  width: 90px;
+  height: 90px;
+  border-radius: 10px;
+  margin-right: 14px;
+  border: 1px solid #C6A664;
 }
 </style>

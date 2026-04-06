@@ -1,0 +1,34 @@
+import { LearnData } from '../../types/learn.uts'
+
+export function getMockLearnData(): LearnData {
+  return {
+    headerTitle: '中国古建筑智慧学习平台',
+    headerSubtitle: '探索千年营造智慧',
+    paths: [
+      {
+        id: 'p1',
+        title: '入门：认识五脊六兽',
+        desc: '从基础名词开始，带你快速入门。',
+        url: '/pages/topic/detail?id=p1'
+      },
+      {
+        id: 'p2',
+        title: '进阶：营造法式初探',
+        desc: '深入学习《营造法式》中的结构精髓。',
+        url: '/pages/topic/detail?id=p2'
+      },
+      {
+        id: 'p3',
+        title: '专家：古建修缮技艺',
+        desc: '了解古建保护与修缮的专业流程。',
+        url: '/pages/topic/detail?id=p3'
+      },
+      {
+        id: 'p4',
+        title: '专题：皇宫与民居',
+        desc: '比较等级森严的皇宫与温润如玉的民居。',
+        url: '/pages/topic/detail?id=p4'
+      }
+    ]
+  } as LearnData
+}
